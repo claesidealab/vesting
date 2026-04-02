@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ägarmodell</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f4f0;color:#1a1a1a;padding:1rem;}
+.wrap{max-width:860px;margin:0 auto;}
+.tab-bar{display:flex;gap:4px;margin-bottom:1.5rem;}
+.tab{padding:8px 20px;border-radius:8px;border:1px solid #ddd;font-size:13px;cursor:pointer;background:#fff;color:#666;}
+.tab.active{background:#534AB7;color:#fff;border-color:#534AB7;font-weight:500;}
+.panel{display:none;}.panel.active{display:block;}
+.section-title{font-size:15px;font-weight:600;margin-bottom:1rem;color:#111;}
+.card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+.row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.row label{font-size:14px;min-width:160px;color:#666;}
+.row:last-child{margin-bottom:0;}
+.val{font-size:14px;font-weight:600;min-width:70px;text-align:right;color:#111;}
+input[type=range]{flex:1;accent-color:#534AB7;}
+.info-box{background:#f5f4f0;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.5rem;font-size:13px;color:#666;line-height:2;}
+.info-box span{font-weight:600;color:#111;}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider-tog{position:absolute;inset:0;background:#ddd;border-radius:12px;cursor:pointer;transition:background .2s;}
+.slider-tog:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked+.slider-tog{background:#534AB7;}
+.toggle input:checked+.slider-tog:before{transform:translateX(20px);}
+.toggle-wrap{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.toggle-label{font-size:14px;color:#666;}
+.summary-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid #f0ede6;}
+.summary-row.indent{padding-left:1rem;font-size:13px;color:#888;}
+.summary-row.subtotal{font-weight:600;background:#f9f8f5;margin:4px -1.25rem;padding:6px 1.25rem;}
+.summary-row.total{border-bottom:none;font-weight:700;font-size:15px;border-top:1px solid #ddd;padding-top:8px;margin-top:4px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-weight:600;font-size:12px;color:#888;padding:6px 8px;border-bottom:1px solid #eee;}
+td{padding:6px 8px;border-bottom:1px solid #f5f5f5;color:#111;}
+.td-r{text-align:right;}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill-c{background:#EEEDFE;color:#3C3489;}
+.pill-f{background:#E1F5EE;color:#085041;}
+.pill-p{background:#FAEEDA;color:#633806;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bar-name{width:55px;font-size:11px;color:#888;}
+.bar-outer{flex:1;height:20px;border-radius:4px;background:#f0ede6;overflow:hidden;display:flex;}
+.seg{height:100%;transition:width .4s;}
+.bar-pct{width:210px;text-align:right;font-weight:600;font-size:12px;color:#555;white-space:nowrap;}
+.legend{display:flex;gap:14px;font-size:11px;color:#888;margin-bottom:1rem;flex-wrap:wrap;}
+.leg-dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle;}
+.warn{font-size:12px;color:#c0392b;margin-top:4px;display:none;}
+.yblock{border:1px solid #e5e3dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff;}
+.yheader{font-size:14px;font-weight:600;margin-bottom:12px;color:#888;}
+.prow2{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0ede6;flex-wrap:wrap;}
+.prow2:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.plabel{font-size:13px;font-weight:600;width:55px;}
+.kbadge{font-size:11px;padding:2px 8px;border-radius:20px;background:#E1F5EE;color:#085041;font-weight:600;white-space:nowrap;}
+.nbadge{font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;}
+.ni{font-size:12px;color:#888;min-width:110px;}
+.cuppr{background:#EEEDFE;border-radius:8px;padding:6px 10px;font-size:12px;color:#534AB7;font-weight:500;margin-top:6px;}
+input[type=number]{appearance:textfield;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2 style="font-size:20px;font-weight:700;margin-bottom:1.5rem;color:#111;">Ägarmodell</h2>
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('komp',this)">Kompensation</button>
+  <button class="tab" onclick="showTab('vesting',this)">Vesting & ägande</button>
+</div>
+
+<!-- KOMPENSATION -->
+<div id="panel-komp" class="panel active">
+<div class="section-title">Grundinställningar</div>
+<div class="card">
+  <div class="row"><label>Månadslön (heltid)</label><input type="range" min="40000" max="120000" step="5000" id="lon" value="70000" oninput="update()"><span class="val" id="lonVal">70 000 kr</span></div>
+  <div class="row"><label>Kommunalskatt</label><input type="range" min="28" max="35" step="0.1" id="skatt" value="32" oninput="update()"><span class="val" id="skattVal">32,0%</span></div>
+  <div class="row"><label>Månader per år</label><input type="range" min="1" max="12" step="1" id="manadPerAr" value="12" oninput="update()"><span class="val" id="manadPerArVal">12 mån</span></div>
+</div>
+<div class="section-title">Pension (ITP1)</div>
+<div class="info-box">
+  Del 1: 4,5% × min(lön, 47 625 kr) = <span id="pen-del1">—</span><br>
+  Del 2: 30% × max(lön − 47 625 kr, 0) = <span id="pen-del2">—</span><br>
+  Total: <span id="pen-tot">—</span>/mån
+</div>
+<div class="section-title">Förlorad lön</div>
+<div class="toggle-wrap">
+  <span class="toggle-label" id="lbl-brutto" style="font-weight:600;color:#111;">Brutto</span>
+  <label class="toggle"><input type="checkbox" id="nettoToggle" onchange="update()"><span class="slider-tog"></span></label>
+  <span class="toggle-label" id="lbl-netto">Netto</span>
+</div>
+<div class="section-title">Inkomstbortfall per år</div>
+<div id="kompYears"></div>
+<div class="section-title">Claes totala utlägg</div>
+<div class="card">
+  <div id="summaryRows"></div>
+  <div class="summary-row subtotal"><span id="s-lonlbl">Summa lön</span><span id="s-lon">—</span></div>
+  <div class="summary-row subtotal"><span>Summa pension</span><span id="s-pen">—</span></div>
+  <div class="summary-row total"><span>Totalt</span><span id="s-tot">—</span></div>
+</div>
+</div>
+
+<!-- VESTING -->
+<div id="panel-vesting" class="panel">
+<div class="section-title">Startägande per person</div>
+<div class="card">
+  <div class="row"><label style="color:#085041;">Fredrik</label><input type="range" min="1" max="40" step="1" id="startF" value="15" oninput="updateVesting()"><span class="val" id="startFVal">15%</span></div>
+  <div class="row"><label style="color:#633806;">Pontus</label><input type="range" min="1" max="40" step="1" id="startP" value="15" oninput="updateVesting()"><span class="val" id="startPVal">15%</span></div>
+  <div class="row"><label style="color:#3C3489;">Claes</label><input type="range" min="1" max="40" step="1" id="startC" value="15" oninput="updateVesting()"><span class="val" id="startCVal">15%</span></div>
+  <div id="startWarn" class="warn">OBS: Startägande summerar till mer än 100%.</div>
+</div>
+<div class="section-title">Vestinginställningar</div>
+<div class="card">
+  <div class="row"><label>Vestingperiod (år)</label><input type="range" min="2" max="10" step="1" id="vAr" value="3" oninput="rebuildAll()"><span class="val" id="vArVal">3 år</span></div>
+  <div class="row"><label>Bolagets värde (kr)</label><input type="range" min="1000000" max="50000000" step="500000" id="varde" value="5000000" oninput="updateVesting()"><span class="val" id="vardeVal">5 000 000 kr</span></div>
+</div>
+<div class="section-title">Vestingformel</div>
+<div class="info-box">
+  Utdelat vid start: <span id="v-utdelat">—</span><br>
+  Kvar att vesta: <span id="v-kvar">—</span><br>
+  Pott per år: <span id="v-formel">—</span><br>
+  Fas 1 (ej alla 100%): fördelning proportionellt efter arbetsinsats<br>
+  Fas 2 (alla 100%): omvänd viktning — de under 33,3% får större andel tills lika<br>
+  Claes arbetsinsats = egentid + kompenserat bortfall (F + P)
+</div>
+<div class="section-title">Arbetsinsats per år</div>
+<div class="card">
+  <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr 1fr;gap:8px;font-size:12px;margin-bottom:10px;font-weight:600;">
+    <span style="color:#888;">År</span>
+    <span style="color:#085041;">Fredrik</span>
+    <span style="color:#633806;">Pontus</span>
+    <span style="color:#3C3489;">Claes (egen)</span>
+    <span style="color:#534AB7;">Claes (totalt)</span>
+  </div>
+  <div id="arRows"></div>
+</div>
+<div class="section-title">Ägarutveckling</div>
+<div class="legend">
+  <span><span class="leg-dot" style="background:#534AB7;"></span>Claes</span>
+  <span><span class="leg-dot" style="background:#1D9E75;"></span>Fredrik</span>
+  <span><span class="leg-dot" style="background:#EF9F27;"></span>Pontus</span>
+</div>
+<div id="vestingBars"></div>
+<div class="section-title" style="margin-top:1.5rem;">Detaljer per år</div>
+<div id="vestingTable"></div>
+</div>
+</div>
+
+<script>
+function fmt(n){return Math.round(n).toLocaleString('sv-SE')+' kr';}
+function fmtPct(n){return(Math.round(n*10)/10).toFixed(1)+'%';}
+function itp1(lon){const d1=Math.min(lon,47625)*0.045;const d2=Math.max(lon-47625,0)*0.30;return{d1,d2,tot:d1+d2};}
+function showTab(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-'+id).classList.add('active');el.classList.add('active');}
+let vArG=3;
+
+function rebuildAll(){
+  vArG=+document.getElementById('vAr').value;
+  document.getElementById('vArVal').textContent=vArG+' år';
+  buildKompYears();buildArRows();update();
+}
+
+function buildKompYears(){
+  let html='';
+  for(let i=0;i<vArG;i++){
+    html+=`<div class="yblock"><div class="yheader">${2026+i}</div>
+      <div class="prow2">
+        <span class="plabel" style="color:#085041;">Fredrik</span>
+        <label class="toggle"><input type="checkbox" id="kf_${i}" checked onchange="update()"><span class="slider-tog"></span></label>
+        <span id="kfb_${i}" class="kbadge">Kompenseras</span>
+        <input type="range" min="0" max="100" step="5" value="50" id="bf_${i}" style="flex:1;" oninput="update()">
+        <span class="val" id="bfv_${i}">50%</span>
+        <span class="ni" id="nif_${i}"></span>
+        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
+        <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;">Claes betalar</span>
+      </div>
+      <div class="prow2">
+        <span class="plabel" style="color:#633806;">Pontus</span>
+        <label class="toggle"><input type="checkbox" id="kp_${i}" checked onchange="update()"><span class="slider-tog"></span></label>
+        <span id="kpb_${i}" class="kbadge">Kompenseras</span>
+        <input type="range" min="0" max="100" step="5" value="50" id="bp_${i}" style="flex:1;" oninput="update()">
+        <span class="val" id="bpv_${i}">50%</span>
+        <span class="ni" id="nip_${i}"></span>
+        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bp_bolag_${i}" onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
+        <span id="bp_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;">Claes betalar</span>
+      </div>
+      <div class="cuppr" id="cuppr_${i}">Claes uppräkning: —</div>
+    </div>`;
+  }
+  document.getElementById('kompYears').innerHTML=html;
+}
+
+function buildArRows(){
+  const def=[{f:10,p:10,c:5},{f:50,p:10,c:10},{f:100,p:100,c:100},{f:100,p:100,c:100},{f:100,p:100,c:100}];
+  let html='';
+  const inp=`width:100%;font-size:13px;padding:5px 6px;border:1px solid #e5e3dc;border-radius:6px;`;
+  for(let i=0;i<vArG;i++){
+    const d=def[i]||{f:50,p:50,c:10};
+    html+=`<div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;align-items:center;">
+      <span style="font-size:13px;color:#888;">${2026+i}</span>
+      <input type="number" min="0" max="100" value="${d.f}" id="fp_f_${i}" style="${inp}background:#f9f9f9;color:#111;" oninput="updateVesting()">
+      <input type="number" min="0" max="100" value="${d.p}" id="fp_p_${i}" style="${inp}background:#f9f9f9;color:#111;" oninput="updateVesting()">
+      <input type="number" min="0" max="100" value="${d.c}" id="fp_c_${i}" style="${inp}background:#f0eff9;color:#3C3489;" oninput="update()">
+      <input type="number" id="fp_ctot_${i}" style="${inp}background:#EEEDFE;color:#534AB7;font-weight:700;" readonly>
+    </div>`;
+  }
+  document.getElementById('arRows').innerHTML=html;
+}
+
+function getUppr(i){
+  const kf=document.getElementById('kf_'+i);const kp=document.getElementById('kp_'+i);
+  const bf=document.getElementById('bf_'+i);const bp=document.getElementById('bp_'+i);
+  const bfBolag=document.getElementById('bf_bolag_'+i);const bpBolag=document.getElementById('bp_bolag_'+i);
+  const fClaes=kf&&kf.checked&&bf&&!(bfBolag&&bfBolag.checked);
+  const pClaes=kp&&kp.checked&&bp&&!(bpBolag&&bpBolag.checked);
+  return(fClaes?+bf.value:0)+(pClaes?+bp.value:0);
+}
+
+function update(){
+  const lon=+document.getElementById('lon').value;
+  const skatt=+document.getElementById('skatt').value/100;
+  const mpa=+document.getElementById('manadPerAr').value;
+  const netto=document.getElementById('nettoToggle').checked;
+  document.getElementById('lonVal').textContent=lon.toLocaleString('sv-SE')+' kr';
+  document.getElementById('skattVal').textContent=(+document.getElementById('skatt').value).toFixed(1).replace('.',',')+'%';
+  document.getElementById('manadPerArVal').textContent=mpa+' mån';
+  document.getElementById('lbl-brutto').style.fontWeight=netto?'400':'600';
+  document.getElementById('lbl-brutto').style.color=netto?'#888':'#111';
+  document.getElementById('lbl-netto').style.fontWeight=netto?'600':'400';
+  document.getElementById('lbl-netto').style.color=netto?'#111':'#888';
+  const pen=itp1(lon);
+  document.getElementById('pen-del1').textContent=fmt(pen.d1);
+  document.getElementById('pen-del2').textContent=fmt(pen.d2);
+  document.getElementById('pen-tot').textContent=fmt(pen.tot);
+  const lonTyp=netto?'netto':'brutto';
+  let totLon=0,totPen=0,sumHtml='';
+  for(let i=0;i<vArG;i++){
+    const kf=document.getElementById('kf_'+i);const kp=document.getElementById('kp_'+i);
+    const bf=document.getElementById('bf_'+i);const bp=document.getElementById('bp_'+i);
+    if(!kf)continue;
+    const kompF=kf.checked,kompP=kp.checked;
+    const pF=+bf.value,pP=+bp.value;
+    // Bolaget betalar toggles
+    const bfBolagEl=document.getElementById('bf_bolag_'+i);
+    const bpBolagEl=document.getElementById('bp_bolag_'+i);
+    const fBolag=kompF&&bfBolagEl&&bfBolagEl.checked;
+    const pBolag=kompP&&bpBolagEl&&bpBolagEl.checked;
+    // Update bolaget betalar badges
+    if(bfBolagEl){
+      const badge=document.getElementById('bf_bolag_badge_'+i);
+      if(kompF){
+        bfBolagEl.parentElement.style.opacity='1';
+        badge.style.display='';
+        badge.textContent=fBolag?'Bolaget betalar':'Claes betalar';
+        badge.style.background=fBolag?'#fef9e7':'#f5f5f5';
+        badge.style.color=fBolag?'#7d6608':'#888';
+        badge.style.borderColor=fBolag?'#e0c87a':'#e0e0e0';
+      } else {
+        bfBolagEl.parentElement.style.opacity='0.3';
+        badge.style.display='none';
+      }
+    }
+    if(bpBolagEl){
+      const badge=document.getElementById('bp_bolag_badge_'+i);
+      if(kompP){
+        bpBolagEl.parentElement.style.opacity='1';
+        badge.style.display='';
+        badge.textContent=pBolag?'Bolaget betalar':'Claes betalar';
+        badge.style.background=pBolag?'#fef9e7':'#f5f5f5';
+        badge.style.color=pBolag?'#7d6608':'#888';
+        badge.style.borderColor=pBolag?'#e0c87a':'#e0e0e0';
+      } else {
+        bpBolagEl.parentElement.style.opacity='0.3';
+        badge.style.display='none';
+      }
+    }
+    document.getElementById('bfv_'+i).textContent=pF+'%';
+    document.getElementById('bpv_'+i).textContent=pP+'%';
+    document.getElementById('kfb_'+i).className=kompF?'kbadge':'nbadge';
+    document.getElementById('kfb_'+i).textContent=kompF?'Kompenseras':'Kompenseras ej';
+    document.getElementById('kpb_'+i).className=kompP?'kbadge':'nbadge';
+    document.getElementById('kpb_'+i).textContent=kompP?'Kompenseras':'Kompenseras ej';
+    const lF=kompF?(netto?lon*(pF/100)*(1-skatt):lon*(pF/100)):0;
+    const lP=kompP?(netto?lon*(pP/100)*(1-skatt):lon*(pP/100)):0;
+    const penF=kompF?pen.tot*(pF/100):0;
+    const penP=kompP?pen.tot*(pP/100):0;
+    document.getElementById('nif_'+i).textContent=kompF?'= '+fmt(lF)+'/mån':'';
+    document.getElementById('nip_'+i).textContent=kompP?'= '+fmt(lP)+'/mån':'';
+    const uppr=(kompF?pF:0)+(kompP?pP:0);
+    let upprTxt='Claes uppräkning detta år: ';
+    if(uppr===0){upprTxt+='0% (ingen kompensation aktiv)';}
+    else{const d=[];if(kompF)d.push('Fredrik '+pF+'%');if(kompP)d.push('Pontus '+pP+'%');upprTxt+=d.join(' + ')+' = '+uppr+'%';}
+    document.getElementById('cuppr_'+i).textContent=upprTxt;
+    const cEgenEl=document.getElementById('fp_c_'+i);
+    const cTotEl=document.getElementById('fp_ctot_'+i);
+    if(cEgenEl&&cTotEl)cTotEl.value=(+cEgenEl.value)+uppr;
+    // Only add to Claes utlägg if Claes is paying (not bolaget)
+    const lFå=(!fBolag?lF:0)*mpa, lPå=(!pBolag?lP:0)*mpa;
+    const pFå=(!fBolag?penF:0)*mpa, pPå=(!pBolag?penP:0)*mpa;
+    totLon+=lFå+lPå;totPen+=pFå+pPå;
+    const åt=lFå+lPå+pFå+pPå;
+    sumHtml+=`<div class="summary-row" style="font-weight:600;font-size:13px;padding-top:8px;">${2026+i}</div>`;
+    if(kompF&&!fBolag){sumHtml+=`<div class="summary-row indent"><span>Lön Fredrik (${pF}%)</span><span>${fmt(lFå)}</span></div><div class="summary-row indent"><span>Pension Fredrik (${pF}% av ITP1)</span><span>${fmt(pFå)}</span></div>`;}
+    if(kompF&&fBolag){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Fredrik (${pF}%) — bolaget betalar</span><span>—</span></div>`;}
+    if(kompP&&!pBolag){sumHtml+=`<div class="summary-row indent"><span>Lön Pontus (${pP}%)</span><span>${fmt(lPå)}</span></div><div class="summary-row indent"><span>Pension Pontus (${pP}% av ITP1)</span><span>${fmt(pPå)}</span></div>`;}
+    if(kompP&&pBolag){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Pontus (${pP}%) — bolaget betalar</span><span>—</span></div>`;}
+    sumHtml+=`<div class="summary-row" style="font-size:13px;color:#888;padding-bottom:8px;border-bottom:1px solid #eee;"><span>Delsumma (Claes utlägg)</span><span style="font-weight:600;color:#111;">${fmt(åt)}</span></div>`;
+  }
+  document.getElementById('summaryRows').innerHTML=sumHtml;
+  document.getElementById('s-lonlbl').textContent='Summa lön ('+lonTyp+')';
+  document.getElementById('s-lon').textContent=fmt(totLon);
+  document.getElementById('s-pen').textContent=fmt(totPen);
+  document.getElementById('s-tot').textContent=fmt(totLon+totPen);
+  updateVesting();
+}
+
+function updateVesting(){
+  const sF=+document.getElementById('startF').value;
+  const sP=+document.getElementById('startP').value;
+  const sC=+document.getElementById('startC').value;
+  const vAr=vArG;
+  const varde=+document.getElementById('varde').value;
+  document.getElementById('startFVal').textContent=sF+'%';
+  document.getElementById('startPVal').textContent=sP+'%';
+  document.getElementById('startCVal').textContent=sC+'%';
+  document.getElementById('vardeVal').textContent=varde.toLocaleString('sv-SE')+' kr';
+  const utd=sF+sP+sC;
+  document.getElementById('startWarn').style.display=utd>100?'block':'none';
+  const kvar=Math.max(0,100-utd);
+  const effAr=vAr-0.5;
+  const pott=kvar/effAr;
+  document.getElementById('v-utdelat').textContent=fmtPct(utd)+' (F:'+sF+'% + P:'+sP+'% + C:'+sC+'%)';
+  document.getElementById('v-kvar').textContent=fmtPct(kvar);
+  document.getElementById('v-formel').textContent=fmtPct(kvar)+' / '+effAr+' eff. år = '+fmtPct(pott)+' per fullt år | 2026: '+fmtPct(pott*0.5)+' (halvår)';
+  const rows=[];
+  for(let i=0;i<vAr;i++){
+    const fEl=document.getElementById('fp_f_'+i);
+    const pEl=document.getElementById('fp_p_'+i);
+    const cEl=document.getElementById('fp_c_'+i);
+    if(!fEl)return;
+    const uppr=getUppr(i);
+    const cEgen=cEl?+cEl.value:0;
+    const cTot=cEgen+uppr;
+    const totEl=document.getElementById('fp_ctot_'+i);
+    if(totEl)totEl.value=cTot;
+    const fRaw=+fEl.value;
+    const pRaw=+pEl.value;
+    // Effective work = input minus compensated income bortfall (min 0)
+    const kfEl2=document.getElementById('kf_'+i);
+    const kpEl2=document.getElementById('kp_'+i);
+    const bfEl2=document.getElementById('bf_'+i);
+    const bpEl2=document.getElementById('bp_'+i);
+    const kompFpct=(kfEl2&&kfEl2.checked&&bfEl2)?+bfEl2.value:0;
+    const kompPpct=(kpEl2&&kpEl2.checked&&bpEl2)?+bpEl2.value:0;
+    const fEff=Math.max(0,fRaw-kompFpct);
+    const pEff=Math.max(0,pRaw-kompPpct);
+    rows.push({f:fEff,fRaw,p:pEff,pRaw,cEgen,uppr,cTot,kompFpct,kompPpct});
+  }
+  const target=100/3;
+  let aF=sF,aP=sP,aC=sC;
+  let years=[];
+  for(let i=0;i<vAr;i++){
+    const{f,p,cEgen,uppr,cTot}=rows[i];
+    const yearMult=i===0?0.5:1.0;
+    const yearPott=pott*yearMult;
+    const allFull=f>=100&&p>=100&&cTot>=100;
+    let andF,andP,andC,phase;
+    if(allFull){
+      phase=2;
+      const gapF=Math.max(target-aF,0);
+      const gapP=Math.max(target-aP,0);
+      const gapC=Math.max(target-aC,0);
+      const totalGap=gapF+gapP+gapC;
+      if(totalGap<0.001){andF=1/3;andP=1/3;andC=1/3;}
+      else{andF=gapF/totalGap;andP=gapP/totalGap;andC=gapC/totalGap;}
+    } else {
+      phase=1;
+      const tot=f+p+cTot;
+      andF=tot>0?f/tot:1/3;
+      andP=tot>0?p/tot:1/3;
+      andC=tot>0?cTot/tot:1/3;
+    }
+    const vF=yearPott*andF,vP=yearPott*andP,vC=yearPott*andC;
+    years.push({ar:2026+i,f,fRaw:rows[i].fRaw,p,pRaw:rows[i].pRaw,
+      kompFpct:rows[i].kompFpct,kompPpct:rows[i].kompPpct,
+      cEgen,uppr,cTot,andF,andP,andC,vF,vP,vC,
+      nyF:aF+vF,nyP:aP+vP,nyC:aC+vC,sF:aF,sP:aP,sC:aC,halvAr:i===0,phase});
+    aF+=vF;aP+=vP;aC+=vC;
+  }
+  const all=[{ar:'Start',nyF:sF,nyP:sP,nyC:sC},...years];
+  let bars='';
+  all.forEach(y=>{bars+=`<div class="bar-row"><span class="bar-name">${y.ar}</span><div class="bar-outer"><div class="seg" style="background:#534AB7;width:${y.nyC}%;"></div><div class="seg" style="background:#1D9E75;width:${y.nyF}%;"></div><div class="seg" style="background:#EF9F27;width:${y.nyP}%;"></div></div><span class="bar-pct">C:${fmtPct(y.nyC)} F:${fmtPct(y.nyF)} P:${fmtPct(y.nyP)}</span></div>`;});
+  document.getElementById('vestingBars').innerHTML=bars;
+  let tbl='<div class="card" style="overflow-x:auto;"><table><thead><tr><th>År</th><th>Person</th><th class="td-r">Ingång</th><th class="td-r">Arbetsinsats</th><th class="td-r">Andel år</th><th class="td-r">Vestat</th><th class="td-r">Ägande efter</th><th class="td-r">Värde</th></tr></thead><tbody>';
+  years.forEach(y=>{
+    const cLbl=y.uppr>0?`${y.cEgen}% + ${y.uppr}% = ${y.cTot}%`:`${y.cTot}%`;
+    const fLbl=y.kompFpct>0?`${y.fRaw}% − ${y.kompFpct}% = ${y.f}%`:`${y.f}%`;
+    const pLbl=y.kompPpct>0?`${y.pRaw}% − ${y.kompPpct}% = ${y.p}%`:`${y.p}%`;
+    [{name:'Fredrik',pill:'pill-f',s:y.sF,arb:fLbl,and:y.andF,v:y.vF,ny:y.nyF,isF:true},
+     {name:'Pontus', pill:'pill-p',s:y.sP,arb:pLbl,and:y.andP,v:y.vP,ny:y.nyP,isP:true},
+     {name:'Claes',  pill:'pill-c',s:y.sC,arb:cLbl,and:y.andC,v:y.vC,ny:y.nyC}
+    ].forEach((p,idx)=>{
+      const phaseTag=y.phase===2?' <span style="font-size:10px;background:#EEEDFE;color:#534AB7;padding:1px 5px;border-radius:4px;font-weight:400;">fas 2</span>':'';
+      const halvTag=y.halvAr?' <span style="font-size:10px;color:#888;font-weight:400;">(halvår)</span>':'';
+      tbl+=`<tr>${idx===0?`<td rowspan="3" style="font-weight:600;">${y.ar}${halvTag}${phaseTag}</td>`:''}
+        <td><span class="pill ${p.pill}">${p.name}</span></td>
+        <td class="td-r">${fmtPct(p.s)}</td>
+        <td class="td-r" style="${p.name==='Claes'&&y.uppr>0?'color:#534AB7;font-weight:600;':p.name==='Fredrik'&&y.kompFpct>0?'color:#085041;font-weight:600;':p.name==='Pontus'&&y.kompPpct>0?'color:#633806;font-weight:600;':''}">${p.arb}</td>
+        <td class="td-r">${fmtPct(p.and*100)}</td>
+        <td class="td-r">${fmtPct(p.v)}</td>
+        <td class="td-r">${fmtPct(p.ny)}</td>
+        <td class="td-r">${fmt(p.ny/100*varde)}</td></tr>`;
+    });
+    tbl+=`<tr><td colspan="8" style="padding:0;height:6px;"></td></tr>`;
+  });
+  const last=years[years.length-1];
+  tbl+=`<tr style="background:#f5f4f0;font-weight:700;"><td colspan="6" style="padding:8px;">Totalt efter vestingperiod</td><td class="td-r" style="padding:8px;">${fmtPct(last.nyF+last.nyP+last.nyC)}</td><td class="td-r" style="padding:8px;">${fmt(varde)}</td></tr>`;
+  tbl+='</tbody></table></div>';
+  document.getElementById('vestingTable').innerHTML=tbl;
+}
+
+rebuildAll();
+</script>
+</body>
+</html>
