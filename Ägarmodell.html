@@ -222,26 +222,26 @@ input[type=number]{appearance:textfield;}
 <div class="card">
   <div class="eko-sub" style="margin-top:0;">Kundintäkter</div>
 
-  <div class="toggle-wrap" style="margin-bottom:1rem;">
-    <span class="toggle-label" id="eko-lbl-abs" style="font-weight:600;color:#111;">Per år (antal kunder)</span>
-    <label class="toggle"><input type="checkbox" id="eko-custMode" onchange="buildEkoYears()"><span class="slider-tog"></span></label>
-    <span class="toggle-label" id="eko-lbl-growth">Tillväxttakt (månadsvis)</span>
-  </div>
-
-  <div id="eko-cust-abs">
-    <div id="eko-custYears"></div>
-  </div>
-  <div id="eko-cust-growth" style="display:none;">
-    <div class="eko-grid2">
-      <div class="eko-field"><label>Startkunder (månad 1)</label><input type="number" class="eko-inp" id="eko-startCust" value="0" min="0" oninput="updateEkonomi()"></div>
-      <div class="eko-field"><label>Månadsvis tillväxt (%)</label><input type="number" class="eko-inp" id="eko-growth" value="10" min="0" max="200" step="0.5" oninput="updateEkonomi()"></div>
+  <div class="eko-grid3" style="margin-bottom:16px;">
+    <div class="eko-field">
+      <label>Startkunder (Jul 2026)</label>
+      <input type="number" class="eko-inp" id="eko-startCust" value="5" min="0" oninput="updateEkonomi()">
+    </div>
+    <div class="eko-field">
+      <label>Pris per kund/mån (kr)</label>
+      <input type="number" class="eko-inp" id="eko-price" value="500" min="0" oninput="updateEkonomi()">
+    </div>
+    <div class="eko-field">
+      <label>Churn per månad (%)</label>
+      <input type="number" class="eko-inp" id="eko-churn" value="2" min="0" max="100" step="0.5" oninput="updateEkonomi()">
     </div>
   </div>
 
-  <div class="eko-grid3" style="margin-top:12px;">
-    <div class="eko-field"><label>Pris per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-price" value="500" min="0" oninput="updateEkonomi()"></div>
-    <div class="eko-field"><label>Churn per månad (%)</label><input type="number" class="eko-inp" id="eko-churn" value="2" min="0" max="100" step="0.5" oninput="updateEkonomi()"></div>
+  <div class="eko-sub" style="margin-top:0;">Månatlig kundtillväxt per år</div>
+  <div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;font-size:11px;font-weight:600;color:#888;margin-bottom:6px;padding:0 2px;">
+    <span>År</span><span>% / mån</span><span></span><span style="text-align:right;">Prognos vid årsslut</span>
   </div>
+  <div id="eko-growthYears"></div>
 
   <div class="eko-sub">Tilläggstjänster (add-ons)</div>
   <div class="eko-grid2">
@@ -611,31 +611,21 @@ rebuildAll();
 // ─── EKONOMI TAB ────────────────────────────────────────────────
 
 function buildEkoYears() {
-  const isGrowth = document.getElementById('eko-custMode') && document.getElementById('eko-custMode').checked;
-
-  // Toggle mode labels
-  const lAbs = document.getElementById('eko-lbl-abs');
-  const lGrw = document.getElementById('eko-lbl-growth');
-  if(lAbs){lAbs.style.fontWeight=isGrowth?'400':'600';lAbs.style.color=isGrowth?'#888':'#111';}
-  if(lGrw){lGrw.style.fontWeight=isGrowth?'600':'400';lGrw.style.color=isGrowth?'#111':'#888';}
-  const absDiv=document.getElementById('eko-cust-abs');
-  const grwDiv=document.getElementById('eko-cust-growth');
-  if(absDiv)absDiv.style.display=isGrowth?'none':'block';
-  if(grwDiv)grwDiv.style.display=isGrowth?'block':'none';
-
-  // Customer inputs per year
-  let custHtml='';
+  // Per-year monthly growth rate inputs
+  const growthDefaults=[20,15,10,8,6,5];
+  let growthHtml='';
   for(let i=0;i<vArG;i++){
-    const custDefaults=[0,30,100,300,400,1000];
-    const prev=document.getElementById('eko-cust-'+i)?document.getElementById('eko-cust-'+i).value:(custDefaults[i]||0);
-    custHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">
-      <span style="min-width:50px;color:#888;font-weight:600;">${2026+i}</span>
-      <input type="number" class="eko-inp" id="eko-cust-${i}" value="${prev||0}" min="0" style="max-width:110px;" oninput="updateEkonomi()">
-      <span style="color:#888;font-size:12px;">kunder vid årets start</span>
+    const prev=document.getElementById('eko-growth-'+i)?document.getElementById('eko-growth-'+i).value:(growthDefaults[i]||5);
+    const yearLabel=i===0?'2026 (Jul–Dec)':String(2026+i);
+    growthHtml+=`<div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;align-items:center;margin-bottom:8px;">
+      <span style="font-size:13px;color:#888;font-weight:600;">${yearLabel}</span>
+      <input type="number" class="eko-inp" id="eko-growth-${i}" value="${prev}" min="0" max="200" step="0.5" oninput="updateEkonomi()" style="text-align:center;">
+      <input type="range" min="0" max="50" step="0.5" value="${Math.min(prev,50)}" id="eko-growth-slider-${i}" style="accent-color:#534AB7;" oninput="document.getElementById('eko-growth-${i}').value=this.value;updateEkonomi()">
+      <span id="eko-growth-preview-${i}" style="font-size:12px;color:#534AB7;font-weight:600;text-align:right;"></span>
     </div>`;
   }
-  const custEl=document.getElementById('eko-custYears');
-  if(custEl)custEl.innerHTML=custHtml;
+  const growthEl=document.getElementById('eko-growthYears');
+  if(growthEl)growthEl.innerHTML=growthHtml;
 
   // Supplier revenue per year
   let supHtml='';
@@ -742,12 +732,10 @@ function renderOtherCosts(){
 function getEkoData(){
   const lon=+document.getElementById('lon').value;
   const pen=itp1(lon);
-  const isGrowth=document.getElementById('eko-custMode')&&document.getElementById('eko-custMode').checked;
   const churn=+(document.getElementById('eko-churn')?document.getElementById('eko-churn').value:2)/100;
   const price=+(document.getElementById('eko-price')?document.getElementById('eko-price').value:500);
   const addonRev=+(document.getElementById('eko-addon')?document.getElementById('eko-addon').value:0);
   const addonPct=+(document.getElementById('eko-addonPct')?document.getElementById('eko-addonPct').value:0)/100;
-  const growthRate=+(document.getElementById('eko-growth')?document.getElementById('eko-growth').value:10)/100;
   const claudeBase=+(document.getElementById('eko-claude')?document.getElementById('eko-claude').value:500);
   const claudeScale=document.getElementById('eko-claudeScale')&&document.getElementById('eko-claudeScale').checked;
   const claudePC=+(document.getElementById('eko-claudePerCust')?document.getElementById('eko-claudePerCust').value:2);
@@ -761,19 +749,23 @@ function getEkoData(){
 
   const results=[];
   let cumCash=0;
-  let customers=isGrowth?+(document.getElementById('eko-startCust')?document.getElementById('eko-startCust').value:0):0;
+  const launchMonth=6; // Juli 2026 = månad 6 (0-indexerat)
+  const startCust=+(document.getElementById('eko-startCust')?document.getElementById('eko-startCust').value:5);
+  let customers=0;
 
   for(let m=0;m<vArG*12;m++){
     const yi=Math.floor(m/12);
     const mi=m%12;
 
-    // Customers
-    if(!isGrowth){
-      const custEl=document.getElementById('eko-cust-'+yi);
-      if(mi===0) customers=custEl?+(custEl.value||0):0;
-      else customers=Math.max(0,customers*(1-churn));
+    // Customers: launch in July 2026, then grow with per-year monthly rate
+    if(m<launchMonth){
+      customers=0;
+    } else if(m===launchMonth){
+      customers=startCust;
     } else {
-      if(m>0) customers=Math.max(0,customers*(1+growthRate-churn));
+      const growthEl=document.getElementById('eko-growth-'+yi);
+      const yGrowth=+(growthEl?growthEl.value:10)/100;
+      customers=Math.max(0,customers*(1+yGrowth-churn));
     }
 
     // Revenue
@@ -839,6 +831,18 @@ function updateEkonomi(){
   if(!document.getElementById('panel-ekonomi')) return;
   const data=getEkoData();
   if(!data.length) return;
+
+  // Sync sliders with number inputs and show year-end customer preview
+  for(let i=0;i<vArG;i++){
+    const inp=document.getElementById('eko-growth-'+i);
+    const slider=document.getElementById('eko-growth-slider-'+i);
+    const preview=document.getElementById('eko-growth-preview-'+i);
+    if(inp&&slider) slider.value=Math.min(+inp.value,50);
+    if(preview){
+      const yrEnd=data.filter(d=>d.yi===i);
+      if(yrEnd.length) preview.textContent=yrEnd[yrEnd.length-1].customers+' kunder';
+    }
+  }
 
   const mNames=['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
   const beIdx=data.findIndex(d=>d.cumCash>=0);
