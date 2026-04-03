@@ -59,6 +59,50 @@ td{padding:6px 8px;border-bottom:1px solid #f5f5f5;color:#111;}
 .ni{font-size:12px;color:#888;min-width:110px;}
 .cuppr{background:#EEEDFE;border-radius:8px;padding:6px 10px;font-size:12px;color:#534AB7;font-weight:500;margin-top:6px;}
 input[type=number]{appearance:textfield;}
+
+/* ── Ekonomi tab ── */
+.eko-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem;}
+@media(max-width:600px){.eko-metrics{grid-template-columns:repeat(2,1fr);}}
+.eko-metric{background:#fff;border:1px solid #e5e3dc;border-radius:10px;padding:.75rem 1rem;text-align:center;}
+.eko-metric-label{font-size:11px;color:#888;margin-bottom:4px;}
+.eko-metric-val{font-size:17px;font-weight:700;color:#111;}
+.eko-metric-sub{font-size:11px;color:#888;margin-top:2px;}
+.eko-sub{font-size:12px;font-weight:600;color:#534AB7;text-transform:uppercase;letter-spacing:.4px;margin:1.25rem 0 .5rem;}
+.eko-sub:first-child{margin-top:0;}
+.eko-field{display:flex;flex-direction:column;gap:4px;}
+.eko-field label{font-size:12px;color:#888;}
+.eko-inp{width:100%;font-size:13px;padding:5px 8px;border:1px solid #e5e3dc;border-radius:6px;background:#fafaf9;color:#111;}
+.eko-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.eko-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.eko-it-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.eko-it-label{min-width:110px;font-size:13px;color:#666;}
+.eko-it-inp{width:90px;font-size:13px;padding:5px 8px;border:1px solid #e5e3dc;border-radius:6px;background:#fafaf9;color:#111;}
+.eko-sal-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0ede6;font-size:13px;flex-wrap:wrap;}
+.eko-sal-row:last-child{border-bottom:none;}
+.eko-sal-name{font-weight:600;min-width:58px;}
+.eko-dyn-btn{font-size:12px;padding:4px 12px;border:1px solid #534AB7;color:#534AB7;background:#fff;border-radius:6px;cursor:pointer;margin-top:4px;}
+.eko-dyn-btn:hover{background:#EEEDFE;}
+.eko-rm-btn{font-size:13px;padding:3px 9px;border:1px solid #e0e0e0;color:#999;background:#fff;border-radius:6px;cursor:pointer;}
+.eko-rm-btn:hover{background:#fee;color:#c0392b;border-color:#e0a0a0;}
+.chart-wrap{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;overflow-x:auto;}
+.chart-legend{display:flex;gap:16px;font-size:11px;color:#888;margin-bottom:.75rem;flex-wrap:wrap;}
+.eko-pos{color:#085041;font-weight:600;}
+.eko-neg{color:#c0392b;}
+.eko-mon-block{background:#fff;border:1px solid #e5e3dc;border-radius:10px;margin-bottom:.75rem;overflow:hidden;}
+.eko-mon-hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;font-size:14px;font-weight:600;user-select:none;}
+.eko-mon-hdr:hover{background:#fafaf8;}
+.eko-mon-body{display:none;padding:0 14px 12px;overflow-x:auto;}
+.eko-mon-body.open{display:block;}
+.eko-mon-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.eko-mon-tbl th{font-size:11px;color:#888;padding:5px 6px;border-bottom:1px solid #eee;text-align:right;font-weight:600;white-space:nowrap;}
+.eko-mon-tbl th:first-child{text-align:left;}
+.eko-mon-tbl td{padding:5px 6px;border-bottom:1px solid #f8f8f8;text-align:right;white-space:nowrap;}
+.eko-mon-tbl td:first-child{text-align:left;color:#666;}
+.eko-be-badge{display:inline-block;font-size:10px;background:#E1F5EE;color:#085041;padding:1px 6px;border-radius:8px;font-weight:600;margin-left:6px;vertical-align:middle;}
+.eko-fs-badge{display:inline-block;font-size:10px;background:#EEEDFE;color:#534AB7;padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;vertical-align:middle;}
+.eko-yr-pos td:last-child{color:#085041;font-weight:700;}
+.eko-yr-neg td:last-child{color:#c0392b;}
+.eko-yr-pos{background:#f0faf6;}
 </style>
 </head>
 <body>
@@ -67,6 +111,7 @@ input[type=number]{appearance:textfield;}
 <div class="tab-bar">
   <button class="tab active" onclick="showTab('komp',this)">Kompensation</button>
   <button class="tab" onclick="showTab('vesting',this)">Vesting & ägande</button>
+  <button class="tab" onclick="showTab('ekonomi',this)">Ekonomi</button>
 </div>
 
 <!-- KOMPENSATION -->
@@ -144,6 +189,146 @@ input[type=number]{appearance:textfield;}
 <div class="section-title" style="margin-top:1.5rem;">Detaljer per år</div>
 <div id="vestingTable"></div>
 </div>
+
+<!-- EKONOMI -->
+<div id="panel-ekonomi" class="panel">
+
+<!-- KEY METRICS STRIP -->
+<div class="eko-metrics">
+  <div class="eko-metric">
+    <div class="eko-metric-label">Månader till break-even</div>
+    <div class="eko-metric-val" id="eko-m-breakeven">—</div>
+    <div class="eko-metric-sub" id="eko-m-breakeven-sub">beräknas…</div>
+  </div>
+  <div class="eko-metric">
+    <div class="eko-metric-label">Totalt kapital behövs</div>
+    <div class="eko-metric-val" id="eko-m-capital">—</div>
+    <div class="eko-metric-sub">Max negativt kassaflöde</div>
+  </div>
+  <div class="eko-metric">
+    <div class="eko-metric-label">MRR vid break-even</div>
+    <div class="eko-metric-val" id="eko-m-mrr">—</div>
+    <div class="eko-metric-sub" id="eko-m-mrr-sub"></div>
+  </div>
+  <div class="eko-metric">
+    <div class="eko-metric-label">Första löneutbetalning</div>
+    <div class="eko-metric-val" id="eko-m-firstsal">—</div>
+    <div class="eko-metric-sub" id="eko-m-firstsal-sub">Ingen lön inlagd</div>
+  </div>
+</div>
+
+<!-- REVENUE INPUTS -->
+<div class="section-title">Intäkter</div>
+<div class="card">
+  <div class="eko-sub" style="margin-top:0;">Kundintäkter</div>
+
+  <div class="toggle-wrap" style="margin-bottom:1rem;">
+    <span class="toggle-label" id="eko-lbl-abs" style="font-weight:600;color:#111;">Per år (antal kunder)</span>
+    <label class="toggle"><input type="checkbox" id="eko-custMode" onchange="buildEkoYears()"><span class="slider-tog"></span></label>
+    <span class="toggle-label" id="eko-lbl-growth">Tillväxttakt (månadsvis)</span>
+  </div>
+
+  <div id="eko-cust-abs">
+    <div id="eko-custYears"></div>
+  </div>
+  <div id="eko-cust-growth" style="display:none;">
+    <div class="eko-grid2">
+      <div class="eko-field"><label>Startkunder (månad 1)</label><input type="number" class="eko-inp" id="eko-startCust" value="0" min="0" oninput="updateEkonomi()"></div>
+      <div class="eko-field"><label>Månadsvis tillväxt (%)</label><input type="number" class="eko-inp" id="eko-growth" value="10" min="0" max="200" step="0.5" oninput="updateEkonomi()"></div>
+    </div>
+  </div>
+
+  <div class="eko-grid3" style="margin-top:12px;">
+    <div class="eko-field"><label>Pris per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-price" value="500" min="0" oninput="updateEkonomi()"></div>
+    <div class="eko-field"><label>Churn per månad (%)</label><input type="number" class="eko-inp" id="eko-churn" value="2" min="0" max="100" step="0.5" oninput="updateEkonomi()"></div>
+  </div>
+
+  <div class="eko-sub">Tilläggstjänster (add-ons)</div>
+  <div class="eko-grid2">
+    <div class="eko-field"><label>Genomsn. tillägg per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-addon" value="0" min="0" oninput="updateEkonomi()"></div>
+    <div class="eko-field"><label>Andel kunder med tillägg (%)</label><input type="number" class="eko-inp" id="eko-addonPct" value="0" min="0" max="100" oninput="updateEkonomi()"></div>
+  </div>
+
+  <div class="eko-sub">Leverantörs-/partnerintäkter (per år)</div>
+  <div id="eko-supplierYears"></div>
+</div>
+
+<!-- COST INPUTS -->
+<div class="section-title">Kostnader</div>
+<div class="card">
+  <div class="eko-sub" style="margin-top:0;">Löner (hämtas automatiskt från Kompensation-fliken)</div>
+  <div id="eko-salaries"></div>
+
+  <div class="eko-sub">IT-plattform (fasta månadskostnader)</div>
+  <div class="eko-it-row">
+    <span class="eko-it-label">Claude API</span>
+    <input type="number" class="eko-it-inp" id="eko-claude" value="500" min="0" oninput="updateEkonomi()">
+    <span style="font-size:12px;color:#888;">kr/mån</span>
+  </div>
+  <div class="eko-it-row" style="margin-left:122px;margin-top:-4px;margin-bottom:12px;">
+    <label class="toggle"><input type="checkbox" id="eko-claudeScale" onchange="updateEkonomi()"><span class="slider-tog"></span></label>
+    <span style="font-size:12px;color:#666;">Skalas med kunder:</span>
+    <input type="number" class="eko-it-inp" id="eko-claudePerCust" value="2" min="0" step="0.5" style="width:65px;" oninput="updateEkonomi()">
+    <span style="font-size:12px;color:#888;">kr/kund/mån</span>
+  </div>
+  <div class="eko-it-row">
+    <span class="eko-it-label">Netlify</span>
+    <input type="number" class="eko-it-inp" id="eko-netlify" value="200" min="0" oninput="updateEkonomi()">
+    <span style="font-size:12px;color:#888;">kr/mån</span>
+  </div>
+  <div class="eko-it-row">
+    <span class="eko-it-label">MIRO</span>
+    <input type="number" class="eko-it-inp" id="eko-miro" value="200" min="0" oninput="updateEkonomi()">
+    <span style="font-size:12px;color:#888;">kr/mån</span>
+  </div>
+  <div class="eko-it-row">
+    <input type="text" class="eko-inp" id="eko-otherIT-label" placeholder="Övrig IT (namn)" style="max-width:140px;" oninput="updateEkonomi()">
+    <input type="number" class="eko-it-inp" id="eko-otherIT-amt" value="0" min="0" oninput="updateEkonomi()">
+    <span style="font-size:12px;color:#888;">kr/mån</span>
+  </div>
+
+  <div class="eko-sub">Konsulter / externa utvecklare (per år)</div>
+  <div id="eko-consultYears"></div>
+
+  <div class="eko-sub">Övriga månatliga kostnader</div>
+  <div id="eko-otherCostRows"></div>
+  <button class="eko-dyn-btn" onclick="addOtherCost()">+ Lägg till kostnad</button>
+</div>
+
+<!-- CHART -->
+<div class="section-title">Kassaflöde & intäkter</div>
+<div class="chart-wrap">
+  <div class="chart-legend">
+    <span><span class="leg-dot" style="background:#1D9E75;"></span>Intäkter/mån</span>
+    <span><span class="leg-dot" style="background:#e74c3c;"></span>Kostnader/mån</span>
+    <span><span class="leg-dot" style="background:#534AB7;"></span>Kumulativt kassaflöde</span>
+  </div>
+  <canvas id="ekoChart"></canvas>
+</div>
+
+<!-- YEARLY SUMMARY -->
+<div class="section-title">Sammanfattning per år</div>
+<div class="card" style="overflow-x:auto;padding:0;">
+  <table>
+    <thead>
+      <tr>
+        <th>År</th>
+        <th class="td-r">Kunder (slut)</th>
+        <th class="td-r">Intäkter</th>
+        <th class="td-r">Kostnader</th>
+        <th class="td-r">Resultat</th>
+        <th class="td-r">Kumulativ kassa</th>
+      </tr>
+    </thead>
+    <tbody id="ekoYearTbody"></tbody>
+  </table>
+</div>
+
+<!-- MONTHLY DETAIL -->
+<div class="section-title" style="margin-top:1.5rem;">Månadsdetaljer</div>
+<div id="ekoMonthly"></div>
+
+</div>
 </div>
 
 <script>
@@ -156,7 +341,7 @@ let vArG=3;
 function rebuildAll(){
   vArG=+document.getElementById('vAr').value;
   document.getElementById('vArVal').textContent=vArG+' år';
-  buildKompYears();buildArRows();update();
+  buildKompYears();buildArRows();update();buildEkoYears();
 }
 
 function buildKompYears(){
@@ -416,9 +601,452 @@ function updateVesting(){
   tbl+=`<tr style="background:#f5f4f0;font-weight:700;"><td colspan="6" style="padding:8px;">Totalt efter vestingperiod</td><td class="td-r" style="padding:8px;">${fmtPct(last.nyF+last.nyP+last.nyC)}</td><td class="td-r" style="padding:8px;">${fmt(varde)}</td></tr>`;
   tbl+='</tbody></table></div>';
   document.getElementById('vestingTable').innerHTML=tbl;
+  updateEkonomi();
 }
 
+let ekoOtherCosts = [];
+
 rebuildAll();
+
+// ─── EKONOMI TAB ────────────────────────────────────────────────
+
+function buildEkoYears() {
+  const isGrowth = document.getElementById('eko-custMode') && document.getElementById('eko-custMode').checked;
+
+  // Toggle mode labels
+  const lAbs = document.getElementById('eko-lbl-abs');
+  const lGrw = document.getElementById('eko-lbl-growth');
+  if(lAbs){lAbs.style.fontWeight=isGrowth?'400':'600';lAbs.style.color=isGrowth?'#888':'#111';}
+  if(lGrw){lGrw.style.fontWeight=isGrowth?'600':'400';lGrw.style.color=isGrowth?'#111':'#888';}
+  const absDiv=document.getElementById('eko-cust-abs');
+  const grwDiv=document.getElementById('eko-cust-growth');
+  if(absDiv)absDiv.style.display=isGrowth?'none':'block';
+  if(grwDiv)grwDiv.style.display=isGrowth?'block':'none';
+
+  // Customer inputs per year
+  let custHtml='';
+  for(let i=0;i<vArG;i++){
+    const prev=document.getElementById('eko-cust-'+i)?document.getElementById('eko-cust-'+i).value:0;
+    custHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">
+      <span style="min-width:50px;color:#888;font-weight:600;">${2026+i}</span>
+      <input type="number" class="eko-inp" id="eko-cust-${i}" value="${prev||0}" min="0" style="max-width:110px;" oninput="updateEkonomi()">
+      <span style="color:#888;font-size:12px;">kunder vid årets start</span>
+    </div>`;
+  }
+  const custEl=document.getElementById('eko-custYears');
+  if(custEl)custEl.innerHTML=custHtml;
+
+  // Supplier revenue per year
+  let supHtml='';
+  for(let i=0;i<vArG;i++){
+    const prev=document.getElementById('eko-supplier-'+i)?document.getElementById('eko-supplier-'+i).value:0;
+    supHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">
+      <span style="min-width:50px;color:#888;font-weight:600;">${2026+i}</span>
+      <input type="number" class="eko-inp" id="eko-supplier-${i}" value="${prev||0}" min="0" style="max-width:110px;" oninput="updateEkonomi()">
+      <span style="color:#888;font-size:12px;">kr/mån från leverantörer</span>
+    </div>`;
+  }
+  const supEl=document.getElementById('eko-supplierYears');
+  if(supEl)supEl.innerHTML=supHtml;
+
+  // Consultant cost per year
+  let conHtml='';
+  for(let i=0;i<vArG;i++){
+    const pAmt=document.getElementById('eko-con-amt-'+i)?document.getElementById('eko-con-amt-'+i).value:0;
+    const pLbl=document.getElementById('eko-con-lbl-'+i)?document.getElementById('eko-con-lbl-'+i).value:'';
+    const pRec=document.getElementById('eko-con-rec-'+i)?document.getElementById('eko-con-rec-'+i).checked:true;
+    conHtml+=`<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #f0ede6;">
+      <div style="font-size:12px;color:#888;font-weight:600;margin-bottom:6px;">${2026+i}</div>
+      <div style="display:grid;grid-template-columns:1fr 100px auto auto;gap:8px;align-items:center;">
+        <input type="text" class="eko-inp" id="eko-con-lbl-${i}" placeholder="Konsult/leverantör (lämna tomt om ingen)" value="${pLbl}" oninput="updateEkonomi()">
+        <input type="number" class="eko-inp" id="eko-con-amt-${i}" value="${pAmt||0}" min="0" placeholder="Belopp" oninput="updateEkonomi()">
+        <label class="toggle"><input type="checkbox" id="eko-con-rec-${i}" ${pRec?'checked':''} onchange="ekoUpdateConLbl(${i});updateEkonomi()"><span class="slider-tog"></span></label>
+        <span id="eko-con-rec-lbl-${i}" style="font-size:11px;white-space:nowrap;color:#666;min-width:52px;">${pRec?'kr/mån':'engångs'}</span>
+      </div>
+    </div>`;
+  }
+  const conEl=document.getElementById('eko-consultYears');
+  if(conEl)conEl.innerHTML=conHtml;
+
+  // Salary selectors
+  buildEkoSalaries();
+  updateEkonomi();
+}
+
+function ekoUpdateConLbl(i){
+  const el=document.getElementById('eko-con-rec-'+i);
+  const lbl=document.getElementById('eko-con-rec-lbl-'+i);
+  if(lbl&&el)lbl.textContent=el.checked?'kr/mån':'engångs';
+}
+
+function buildEkoSalaries(){
+  let yOpts='<option value="-1">Aldrig</option>';
+  for(let i=0;i<vArG;i++) yOpts+=`<option value="${i}">${2026+i}</option>`;
+
+  const fPrev=(document.getElementById('eko-sal-f-start')||{}).value||'0';
+  const pPrev=(document.getElementById('eko-sal-p-start')||{}).value||'0';
+  const cPrev=(document.getElementById('eko-sal-c-start')||{}).value||'0';
+  const cOn=document.getElementById('eko-sal-c-on')?document.getElementById('eko-sal-c-on').checked:false;
+
+  function selOpts(sel){
+    return yOpts.replace(`value="${sel}"`,`value="${sel}" selected`);
+  }
+
+  const html=`
+    <div class="eko-sal-row">
+      <span class="eko-sal-name" style="color:#085041;">Fredrik</span>
+      <span style="font-size:12px;color:#888;flex:1;">Hämtas från Kompensation (bolaget betalar-toggle)</span>
+      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
+      <select class="eko-inp" id="eko-sal-f-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(fPrev)}</select>
+    </div>
+    <div class="eko-sal-row">
+      <span class="eko-sal-name" style="color:#633806;">Pontus</span>
+      <span style="font-size:12px;color:#888;flex:1;">Hämtas från Kompensation (bolaget betalar-toggle)</span>
+      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
+      <select class="eko-inp" id="eko-sal-p-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(pPrev)}</select>
+    </div>
+    <div class="eko-sal-row">
+      <span class="eko-sal-name" style="color:#534AB7;">Claes</span>
+      <label class="toggle"><input type="checkbox" id="eko-sal-c-on" ${cOn?'checked':''} onchange="updateEkonomi()"><span class="slider-tog"></span></label>
+      <span style="font-size:12px;color:#666;flex:1;">Tar lön från bolaget</span>
+      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
+      <select class="eko-inp" id="eko-sal-c-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(cPrev)}</select>
+    </div>`;
+  const el=document.getElementById('eko-salaries');
+  if(el)el.innerHTML=html;
+}
+
+function addOtherCost(){
+  ekoOtherCosts.push({label:'',amount:0});
+  renderOtherCosts();
+}
+function removeOtherCost(i){
+  ekoOtherCosts.splice(i,1);
+  renderOtherCosts();
+  updateEkonomi();
+}
+function renderOtherCosts(){
+  let html='';
+  ekoOtherCosts.forEach((oc,i)=>{
+    html+=`<div style="display:grid;grid-template-columns:1fr 110px 36px;gap:8px;margin-bottom:8px;align-items:center;">
+      <input type="text" class="eko-inp" placeholder="Kostnadspost" value="${oc.label}" oninput="ekoOtherCosts[${i}].label=this.value">
+      <input type="number" class="eko-inp" value="${oc.amount}" min="0" placeholder="kr/mån" oninput="ekoOtherCosts[${i}].amount=+this.value;updateEkonomi()">
+      <button class="eko-rm-btn" onclick="removeOtherCost(${i})">×</button>
+    </div>`;
+  });
+  const el=document.getElementById('eko-otherCostRows');
+  if(el)el.innerHTML=html;
+}
+
+function getEkoData(){
+  const lon=+document.getElementById('lon').value;
+  const pen=itp1(lon);
+  const isGrowth=document.getElementById('eko-custMode')&&document.getElementById('eko-custMode').checked;
+  const churn=+(document.getElementById('eko-churn')?document.getElementById('eko-churn').value:2)/100;
+  const price=+(document.getElementById('eko-price')?document.getElementById('eko-price').value:500);
+  const addonRev=+(document.getElementById('eko-addon')?document.getElementById('eko-addon').value:0);
+  const addonPct=+(document.getElementById('eko-addonPct')?document.getElementById('eko-addonPct').value:0)/100;
+  const growthRate=+(document.getElementById('eko-growth')?document.getElementById('eko-growth').value:10)/100;
+  const claudeBase=+(document.getElementById('eko-claude')?document.getElementById('eko-claude').value:500);
+  const claudeScale=document.getElementById('eko-claudeScale')&&document.getElementById('eko-claudeScale').checked;
+  const claudePC=+(document.getElementById('eko-claudePerCust')?document.getElementById('eko-claudePerCust').value:2);
+  const netlify=+(document.getElementById('eko-netlify')?document.getElementById('eko-netlify').value:200);
+  const miro=+(document.getElementById('eko-miro')?document.getElementById('eko-miro').value:200);
+  const otherIT=+(document.getElementById('eko-otherIT-amt')?document.getElementById('eko-otherIT-amt').value:0);
+  const fStart=+(document.getElementById('eko-sal-f-start')?document.getElementById('eko-sal-f-start').value:-1);
+  const pStart=+(document.getElementById('eko-sal-p-start')?document.getElementById('eko-sal-p-start').value:-1);
+  const cOn=document.getElementById('eko-sal-c-on')&&document.getElementById('eko-sal-c-on').checked;
+  const cStart=+(document.getElementById('eko-sal-c-start')?document.getElementById('eko-sal-c-start').value:-1);
+
+  const results=[];
+  let cumCash=0;
+  let customers=isGrowth?+(document.getElementById('eko-startCust')?document.getElementById('eko-startCust').value:0):0;
+
+  for(let m=0;m<vArG*12;m++){
+    const yi=Math.floor(m/12);
+    const mi=m%12;
+
+    // Customers
+    if(!isGrowth){
+      const custEl=document.getElementById('eko-cust-'+yi);
+      if(mi===0) customers=custEl?+(custEl.value||0):0;
+      else customers=Math.max(0,customers*(1-churn));
+    } else {
+      if(m>0) customers=Math.max(0,customers*(1+growthRate-churn));
+    }
+
+    // Revenue
+    const supEl=document.getElementById('eko-supplier-'+yi);
+    const supplierRev=supEl?+(supEl.value||0):0;
+    const mrr=customers*price+customers*addonRev*addonPct;
+    const totalRev=mrr+supplierRev;
+
+    // Salary costs (salary + ITP1 pension)
+    let salaryCost=0;
+    const kfEl=document.getElementById('kf_'+yi);
+    const bfBEl=document.getElementById('bf_bolag_'+yi);
+    const bfEl=document.getElementById('bf_'+yi);
+    if(kfEl&&kfEl.checked&&bfBEl&&bfBEl.checked&&bfEl&&fStart>=0&&yi>=fStart){
+      const pct=+bfEl.value/100;
+      salaryCost+=lon*pct+pen.tot*pct;
+    }
+    const kpEl=document.getElementById('kp_'+yi);
+    const bpBEl=document.getElementById('bp_bolag_'+yi);
+    const bpEl=document.getElementById('bp_'+yi);
+    if(kpEl&&kpEl.checked&&bpBEl&&bpBEl.checked&&bpEl&&pStart>=0&&yi>=pStart){
+      const pct=+bpEl.value/100;
+      salaryCost+=lon*pct+pen.tot*pct;
+    }
+    const cEgenEl=document.getElementById('fp_c_'+yi);
+    if(cOn&&cStart>=0&&yi>=cStart&&cEgenEl){
+      const pct=+cEgenEl.value/100;
+      salaryCost+=lon*pct+pen.tot*pct;
+    }
+
+    // IT costs
+    const itCost=claudeBase+(claudeScale?customers*claudePC:0)+netlify+miro+otherIT;
+
+    // Consultant costs
+    let consultCost=0;
+    const conAmt=document.getElementById('eko-con-amt-'+yi);
+    const conRec=document.getElementById('eko-con-rec-'+yi);
+    if(conAmt){
+      const amt=+(conAmt.value||0);
+      const isRec=conRec?conRec.checked:true;
+      if(isRec) consultCost+=amt;
+      else if(mi===0) consultCost+=amt;
+    }
+
+    // Other costs
+    const otherCost=ekoOtherCosts.reduce((s,oc)=>s+(+oc.amount||0),0);
+
+    const totalCost=salaryCost+itCost+consultCost+otherCost;
+    const net=totalRev-totalCost;
+    cumCash+=net;
+
+    results.push({m,yi,mi,year:2026+yi,month:mi+1,
+      customers:Math.round(customers),
+      mrr:Math.round(mrr),supplierRev:Math.round(supplierRev),totalRev:Math.round(totalRev),
+      salaryCost:Math.round(salaryCost),itCost:Math.round(itCost),
+      consultCost:Math.round(consultCost),otherCost:Math.round(otherCost),
+      totalCost:Math.round(totalCost),net:Math.round(net),cumCash:Math.round(cumCash)});
+  }
+  return results;
+}
+
+function updateEkonomi(){
+  if(!document.getElementById('panel-ekonomi')) return;
+  const data=getEkoData();
+  if(!data.length) return;
+
+  const mNames=['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+  const beIdx=data.findIndex(d=>d.cumCash>=0);
+  const minCash=Math.min(0,...data.map(d=>d.cumCash));
+  const beData=beIdx>=0?data[beIdx]:null;
+  const fsIdx=data.findIndex(d=>d.salaryCost>0);
+  const fsData=fsIdx>=0?data[fsIdx]:null;
+
+  // Key metrics
+  const beEl=document.getElementById('eko-m-breakeven');
+  const beSubEl=document.getElementById('eko-m-breakeven-sub');
+  if(beEl){
+    if(beData){beEl.textContent=(beIdx+1)+' mån';if(beSubEl)beSubEl.textContent=mNames[beData.mi]+' '+beData.year;}
+    else{beEl.textContent='—';if(beSubEl)beSubEl.textContent='Ej uppnått under perioden';}
+  }
+  const capEl=document.getElementById('eko-m-capital');
+  if(capEl)capEl.textContent=minCash<0?fmt(-minCash):'0 kr';
+
+  const mrrEl=document.getElementById('eko-m-mrr');
+  const mrrSubEl=document.getElementById('eko-m-mrr-sub');
+  if(mrrEl){
+    if(beData){mrrEl.textContent=fmt(beData.mrr);if(mrrSubEl)mrrSubEl.textContent=beData.customers+' kunder';}
+    else{mrrEl.textContent='—';if(mrrSubEl)mrrSubEl.textContent='';}
+  }
+  const fsEl=document.getElementById('eko-m-firstsal');
+  const fsSubEl=document.getElementById('eko-m-firstsal-sub');
+  if(fsEl){
+    if(fsData){fsEl.textContent=mNames[fsData.mi]+' '+fsData.year;if(fsSubEl)fsSubEl.textContent=fmt(fsData.salaryCost)+'/mån';}
+    else{fsEl.textContent='—';if(fsSubEl)fsSubEl.textContent='Ingen lön inlagd';}
+  }
+
+  // Draw chart
+  drawEkoChart(data,beIdx,fsIdx);
+
+  // Yearly summary table
+  let tRows='';
+  for(let i=0;i<vArG;i++){
+    const yd=data.filter(d=>d.yi===i);
+    const totRev=yd.reduce((s,d)=>s+d.totalRev,0);
+    const totCost=yd.reduce((s,d)=>s+d.totalCost,0);
+    const totNet=totRev-totCost;
+    const endCust=yd[yd.length-1].customers;
+    const endCum=yd[yd.length-1].cumCash;
+    const isPos=endCum>=0;
+    const beHere=beIdx>=0&&data[beIdx].yi===i;
+    const fsHere=fsIdx>=0&&data[fsIdx].yi===i;
+    tRows+=`<tr class="${isPos?'eko-yr-pos':'eko-yr-neg'}">
+      <td style="font-weight:600;">${2026+i}${beHere?'<span class="eko-be-badge">Break-even</span>':''}${fsHere?'<span class="eko-fs-badge">1:a lön</span>':''}</td>
+      <td class="td-r">${endCust}</td>
+      <td class="td-r">${fmt(totRev)}</td>
+      <td class="td-r">${fmt(totCost)}</td>
+      <td class="td-r ${totNet>=0?'eko-pos':'eko-neg'}">${totNet>=0?'+':''}${fmt(totNet)}</td>
+      <td class="td-r" style="font-weight:700;">${endCum>=0?'+':''}${fmt(endCum)}</td>
+    </tr>`;
+  }
+  const tBody=document.getElementById('ekoYearTbody');
+  if(tBody)tBody.innerHTML=tRows;
+
+  // Monthly detail blocks
+  let monHtml='';
+  for(let i=0;i<vArG;i++){
+    const yd=data.filter(d=>d.yi===i);
+    const totRev=yd.reduce((s,d)=>s+d.totalRev,0);
+    const totCost=yd.reduce((s,d)=>s+d.totalCost,0);
+    const endCum=yd[yd.length-1].cumCash;
+    let rows='';
+    yd.forEach(d=>{
+      const isPos=d.cumCash>=0;
+      const beM=d.m===beIdx;
+      const fsM=d.m===fsIdx;
+      rows+=`<tr>
+        <td>${mNames[d.mi]}${beM?'<span class="eko-be-badge">BE</span>':''}${fsM?'<span class="eko-fs-badge">Lön</span>':''}</td>
+        <td>${d.customers}</td>
+        <td>${fmt(d.mrr)}</td>
+        <td>${fmt(d.totalRev)}</td>
+        <td>${fmt(d.salaryCost)}</td>
+        <td>${fmt(d.itCost)}</td>
+        <td>${fmt(d.consultCost)}</td>
+        <td>${fmt(d.otherCost)}</td>
+        <td>${fmt(d.totalCost)}</td>
+        <td class="${d.net>=0?'eko-pos':'eko-neg'}">${d.net>=0?'+':''}${fmt(d.net)}</td>
+        <td style="font-weight:700;" class="${isPos?'eko-pos':'eko-neg'}">${d.cumCash>=0?'+':''}${fmt(d.cumCash)}</td>
+      </tr>`;
+    });
+    monHtml+=`<div class="eko-mon-block">
+      <div class="eko-mon-hdr" onclick="toggleEkoMon(${i})">
+        <span style="font-size:13px;">${2026+i} — Intäkter: ${fmt(totRev)} / Kostnader: ${fmt(totCost)}</span>
+        <span style="font-size:13px;" class="${endCum>=0?'eko-pos':'eko-neg'}">Kassa: ${endCum>=0?'+':''}${fmt(endCum)} ▾</span>
+      </div>
+      <div class="eko-mon-body" id="eko-mon-body-${i}">
+        <table class="eko-mon-tbl">
+          <thead><tr><th>Månad</th><th class="td-r">Kunder</th><th class="td-r">MRR</th><th class="td-r">Intäkter</th><th class="td-r">Löner</th><th class="td-r">IT</th><th class="td-r">Konsulter</th><th class="td-r">Övrigt</th><th class="td-r">Kostnader</th><th class="td-r">Resultat</th><th class="td-r">Kum. kassa</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  const monEl=document.getElementById('ekoMonthly');
+  if(monEl)monEl.innerHTML=monHtml;
+}
+
+function toggleEkoMon(i){
+  const b=document.getElementById('eko-mon-body-'+i);
+  if(b)b.classList.toggle('open');
+}
+
+function fmtK(n){
+  const a=Math.abs(n);
+  if(a>=1000000)return(n/1000000).toFixed(1).replace('.',',')+' M';
+  if(a>=1000)return Math.round(n/1000)+'k';
+  return Math.round(n).toString();
+}
+
+function drawEkoChart(data,beIdx,fsIdx){
+  const canvas=document.getElementById('ekoChart');
+  if(!canvas||!data.length)return;
+  const n=data.length;
+  const slotW=Math.max(9,Math.floor(740/n));
+  const W=Math.max(760,n*slotW+84);
+  canvas.width=W;canvas.height=270;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,270);
+
+  const padL=70,padR=20,padT=20,padB=38;
+  const chartW=W-padL-padR;
+  const chartH=270-padT-padB;
+
+  const allVals=data.flatMap(d=>[d.totalRev,d.totalCost,d.cumCash]);
+  const rawMax=Math.max(0,...allVals);
+  const rawMin=Math.min(0,...allVals);
+  const range=rawMax-rawMin||1;
+  const toY=v=>padT+chartH*(rawMax-v)/range;
+  const zeroY=toY(0);
+
+  // Grid
+  const steps=5;
+  for(let g=0;g<=steps;g++){
+    const v=rawMin+(range/steps)*(steps-g);
+    const y=padT+(g/steps)*chartH;
+    ctx.beginPath();
+    ctx.strokeStyle=Math.abs(v)<0.01?'#bbb':'#f0ede6';
+    ctx.lineWidth=Math.abs(v)<0.01?1.5:1;
+    ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='#999';ctx.font='10px -apple-system,sans-serif';
+    ctx.textAlign='right';ctx.fillText(fmtK(v),padL-5,y+4);
+  }
+
+  // Bars
+  const bw=Math.max(2,Math.min(slotW*0.38,12));
+  data.forEach((d,i)=>{
+    const x=padL+i*slotW+slotW*0.08;
+    // Revenue
+    const revH=Math.abs(toY(d.totalRev)-zeroY)||1;
+    ctx.fillStyle='#1D9E75';ctx.globalAlpha=0.72;
+    ctx.fillRect(x,Math.min(toY(d.totalRev),zeroY),bw,revH);
+    // Cost
+    const costH=Math.abs(toY(d.totalCost)-zeroY)||1;
+    ctx.fillStyle='#e74c3c';ctx.globalAlpha=0.72;
+    ctx.fillRect(x+bw+1,Math.min(toY(d.totalCost),zeroY),bw,costH);
+    ctx.globalAlpha=1;
+  });
+
+  // Break-even vertical marker
+  if(beIdx>=0){
+    const bex=padL+beIdx*slotW+slotW*0.5;
+    ctx.save();ctx.beginPath();ctx.strokeStyle='#534AB7';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+    ctx.moveTo(bex,padT);ctx.lineTo(bex,padT+chartH);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle='#534AB7';ctx.font='bold 10px -apple-system,sans-serif';
+    ctx.textAlign='left';ctx.fillText('Break-even',bex+4,padT+11);ctx.restore();
+  }
+
+  // First salary marker
+  if(fsIdx>=0&&fsIdx!==beIdx){
+    const fsx=padL+fsIdx*slotW+slotW*0.5;
+    ctx.save();ctx.beginPath();ctx.strokeStyle='#EF9F27';ctx.lineWidth=1.5;ctx.setLineDash([3,4]);
+    ctx.moveTo(fsx,padT);ctx.lineTo(fsx,padT+chartH);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle='#EF9F27';ctx.font='bold 10px -apple-system,sans-serif';
+    ctx.textAlign='left';ctx.fillText('1:a lön',fsx+4,padT+23);ctx.restore();
+  }
+
+  // Cumulative cash line
+  ctx.beginPath();ctx.strokeStyle='#534AB7';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  data.forEach((d,i)=>{
+    const x=padL+i*slotW+slotW*0.5;const y=toY(d.cumCash);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Dots at break-even and first salary on the line
+  [beIdx,fsIdx].forEach((idx,j)=>{
+    if(idx<0)return;
+    const d=data[idx];
+    const x=padL+idx*slotW+slotW*0.5;const y=toY(d.cumCash);
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle=j===0?'#534AB7':'#EF9F27';ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+  });
+
+  // Year separators + labels
+  data.forEach((d,i)=>{
+    if(d.mi===0){
+      const x=padL+i*slotW;
+      ctx.beginPath();ctx.strokeStyle='#ddd';ctx.lineWidth=1;ctx.setLineDash([]);
+      ctx.moveTo(x,padT);ctx.lineTo(x,padT+chartH+5);ctx.stroke();
+      ctx.fillStyle='#555';ctx.font='bold 10px -apple-system,sans-serif';
+      ctx.textAlign='left';ctx.fillText(d.year.toString(),x+3,padT+chartH+17);
+    }
+  });
+}
 </script>
 </body>
 </html>
