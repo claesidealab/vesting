@@ -118,7 +118,7 @@ input[type=number]{appearance:textfield;}
 <div id="panel-komp" class="panel active">
 <div class="section-title">Grundinställningar</div>
 <div class="card">
-  <div class="row"><label>Månadslön (heltid)</label><input type="range" min="40000" max="120000" step="5000" id="lon" value="70000" oninput="update()"><span class="val" id="lonVal">70 000 kr</span></div>
+  <div class="row"><label>Månadslön (heltid)</label><input type="range" min="40000" max="120000" step="5000" id="lon" value="50000" oninput="update()"><span class="val" id="lonVal">50 000 kr</span></div>
   <div class="row"><label>Kommunalskatt</label><input type="range" min="28" max="35" step="0.1" id="skatt" value="32" oninput="update()"><span class="val" id="skattVal">32,0%</span></div>
   <div class="row"><label>Månader per år</label><input type="range" min="1" max="12" step="1" id="manadPerAr" value="12" oninput="update()"><span class="val" id="manadPerArVal">12 mån</span></div>
 </div>
@@ -151,12 +151,12 @@ input[type=number]{appearance:textfield;}
 <div class="card">
   <div class="row"><label style="color:#085041;">Fredrik</label><input type="range" min="1" max="40" step="1" id="startF" value="15" oninput="updateVesting()"><span class="val" id="startFVal">15%</span></div>
   <div class="row"><label style="color:#633806;">Pontus</label><input type="range" min="1" max="40" step="1" id="startP" value="15" oninput="updateVesting()"><span class="val" id="startPVal">15%</span></div>
-  <div class="row"><label style="color:#3C3489;">Claes</label><input type="range" min="1" max="40" step="1" id="startC" value="15" oninput="updateVesting()"><span class="val" id="startCVal">15%</span></div>
+  <div class="row"><label style="color:#3C3489;">Claes</label><input type="range" min="1" max="40" step="1" id="startC" value="10" oninput="updateVesting()"><span class="val" id="startCVal">10%</span></div>
   <div id="startWarn" class="warn">OBS: Startägande summerar till mer än 100%.</div>
 </div>
 <div class="section-title">Vestinginställningar</div>
 <div class="card">
-  <div class="row"><label>Vestingperiod (år)</label><input type="range" min="2" max="10" step="1" id="vAr" value="3" oninput="rebuildAll()"><span class="val" id="vArVal">3 år</span></div>
+  <div class="row"><label>Vestingperiod (år)</label><input type="range" min="2" max="10" step="1" id="vAr" value="6" oninput="rebuildAll()"><span class="val" id="vArVal">6 år</span></div>
   <div class="row"><label>Bolagets värde (kr)</label><input type="range" min="1000000" max="50000000" step="500000" id="varde" value="5000000" oninput="updateVesting()"><span class="val" id="vardeVal">5 000 000 kr</span></div>
 </div>
 <div class="section-title">Vestingformel</div>
@@ -245,8 +245,8 @@ input[type=number]{appearance:textfield;}
 
   <div class="eko-sub">Tilläggstjänster (add-ons)</div>
   <div class="eko-grid2">
-    <div class="eko-field"><label>Genomsn. tillägg per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-addon" value="0" min="0" oninput="updateEkonomi()"></div>
-    <div class="eko-field"><label>Andel kunder med tillägg (%)</label><input type="number" class="eko-inp" id="eko-addonPct" value="0" min="0" max="100" oninput="updateEkonomi()"></div>
+    <div class="eko-field"><label>Genomsn. tillägg per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-addon" value="500" min="0" oninput="updateEkonomi()"></div>
+    <div class="eko-field"><label>Andel kunder med tillägg (%)</label><input type="number" class="eko-inp" id="eko-addonPct" value="40" min="0" max="100" oninput="updateEkonomi()"></div>
   </div>
 
   <div class="eko-sub">Leverantörs-/partnerintäkter (per år)</div>
@@ -336,7 +336,7 @@ function fmt(n){return Math.round(n).toLocaleString('sv-SE')+' kr';}
 function fmtPct(n){return(Math.round(n*10)/10).toFixed(1)+'%';}
 function itp1(lon){const d1=Math.min(lon,47625)*0.045;const d2=Math.max(lon-47625,0)*0.30;return{d1,d2,tot:d1+d2};}
 function showTab(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-'+id).classList.add('active');el.classList.add('active');}
-let vArG=3;
+let vArG=6;
 
 function rebuildAll(){
   vArG=+document.getElementById('vAr').value;
@@ -350,20 +350,20 @@ function buildKompYears(){
     html+=`<div class="yblock"><div class="yheader">${2026+i}</div>
       <div class="prow2">
         <span class="plabel" style="color:#085041;">Fredrik</span>
-        <label class="toggle"><input type="checkbox" id="kf_${i}" checked onchange="update()"><span class="slider-tog"></span></label>
-        <span id="kfb_${i}" class="kbadge">Kompenseras</span>
+        <label class="toggle"><input type="checkbox" id="kf_${i}" ${i>=2?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
+        <span id="kfb_${i}" class="${i>=2?'kbadge':'nbadge'}">${i>=2?'Kompenseras':'Kompenseras ej'}</span>
         <input type="range" min="0" max="100" step="5" value="50" id="bf_${i}" style="flex:1;" oninput="update()">
         <span class="val" id="bfv_${i}">50%</span>
         <span class="ni" id="nif_${i}"></span>
-        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
-        <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;">Claes betalar</span>
+        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" ${i===2?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
+        <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${i===2?'background:#fef9e7;color:#7d6608;border:1px solid #e0c87a;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${i===2?'Bolaget betalar':'Claes betalar'}</span>
       </div>
       <div class="prow2">
         <span class="plabel" style="color:#633806;">Pontus</span>
-        <label class="toggle"><input type="checkbox" id="kp_${i}" checked onchange="update()"><span class="slider-tog"></span></label>
-        <span id="kpb_${i}" class="kbadge">Kompenseras</span>
-        <input type="range" min="0" max="100" step="5" value="50" id="bp_${i}" style="flex:1;" oninput="update()">
-        <span class="val" id="bpv_${i}">50%</span>
+        <label class="toggle"><input type="checkbox" id="kp_${i}" ${i>=2?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
+        <span id="kpb_${i}" class="${i>=2?'kbadge':'nbadge'}">${i>=2?'Kompenseras':'Kompenseras ej'}</span>
+        <input type="range" min="0" max="100" step="5" value="${i===1?20:50}" id="bp_${i}" style="flex:1;" oninput="update()">
+        <span class="val" id="bpv_${i}">${i===1?'20%':'50%'}</span>
         <span class="ni" id="nip_${i}"></span>
         <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bp_bolag_${i}" onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
         <span id="bp_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;">Claes betalar</span>
@@ -375,7 +375,7 @@ function buildKompYears(){
 }
 
 function buildArRows(){
-  const def=[{f:10,p:10,c:5},{f:50,p:10,c:10},{f:100,p:100,c:100},{f:100,p:100,c:100},{f:100,p:100,c:100}];
+  const def=[{f:50,p:50,c:0},{f:50,p:50,c:0},{f:100,p:100,c:50},{f:100,p:100,c:100},{f:100,p:100,c:100},{f:100,p:100,c:100}];
   let html='';
   const inp=`width:100%;font-size:13px;padding:5px 6px;border:1px solid #e5e3dc;border-radius:6px;`;
   for(let i=0;i<vArG;i++){
@@ -626,7 +626,8 @@ function buildEkoYears() {
   // Customer inputs per year
   let custHtml='';
   for(let i=0;i<vArG;i++){
-    const prev=document.getElementById('eko-cust-'+i)?document.getElementById('eko-cust-'+i).value:0;
+    const custDefaults=[0,30,100,300,400,1000];
+    const prev=document.getElementById('eko-cust-'+i)?document.getElementById('eko-cust-'+i).value:(custDefaults[i]||0);
     custHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">
       <span style="min-width:50px;color:#888;font-weight:600;">${2026+i}</span>
       <input type="number" class="eko-inp" id="eko-cust-${i}" value="${prev||0}" min="0" style="max-width:110px;" oninput="updateEkonomi()">
@@ -685,8 +686,8 @@ function buildEkoSalaries(){
 
   const fPrev=(document.getElementById('eko-sal-f-start')||{}).value||'0';
   const pPrev=(document.getElementById('eko-sal-p-start')||{}).value||'0';
-  const cPrev=(document.getElementById('eko-sal-c-start')||{}).value||'0';
-  const cOn=document.getElementById('eko-sal-c-on')?document.getElementById('eko-sal-c-on').checked:false;
+  const cPrev=(document.getElementById('eko-sal-c-start')||{}).value||'2';
+  const cOn=document.getElementById('eko-sal-c-on')?document.getElementById('eko-sal-c-on').checked:true;
 
   function selOpts(sel){
     return yOpts.replace(`value="${sel}"`,`value="${sel}" selected`);
