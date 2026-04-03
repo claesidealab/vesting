@@ -239,7 +239,7 @@ input[type=number]{appearance:textfield;}
 
   <div class="eko-sub" style="margin-top:0;">Månatlig kundtillväxt per år</div>
   <div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;font-size:11px;font-weight:600;color:#888;margin-bottom:6px;padding:0 2px;">
-    <span>År</span><span>% / mån</span><span></span><span style="text-align:right;">Prognos vid årsslut</span>
+    <span>År</span><span>Nya/mån</span><span></span><span style="text-align:right;">Prognos vid årsslut</span>
   </div>
   <div id="eko-growthYears"></div>
 
@@ -605,23 +605,26 @@ function updateVesting(){
 }
 
 let ekoOtherCosts = [];
+let _suppressSave = true;  // suppress saves during initial build to protect localStorage
 
 rebuildAll();
+loadFromStorage();
+_suppressSave = false;  // re-enable saves (loadFromStorage may have already set this, but ensure it's off)
 
 // ─── EKONOMI TAB ────────────────────────────────────────────────
 
 function buildEkoYears() {
-  // Per-year monthly growth rate inputs
-  const growthDefaults=[20,15,10,8,6,5];
+  // Per-year new customers per month inputs
+  const newCustDefaults=[1,2,7,15,25,40];
   let growthHtml='';
   for(let i=0;i<vArG;i++){
-    const prev=document.getElementById('eko-growth-'+i)?document.getElementById('eko-growth-'+i).value:(growthDefaults[i]||5);
+    const prev=document.getElementById('eko-newcust-'+i)?document.getElementById('eko-newcust-'+i).value:(newCustDefaults[i]||5);
     const yearLabel=i===0?'2026 (Jul–Dec)':String(2026+i);
     growthHtml+=`<div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;align-items:center;margin-bottom:8px;">
       <span style="font-size:13px;color:#888;font-weight:600;">${yearLabel}</span>
-      <input type="number" class="eko-inp" id="eko-growth-${i}" value="${prev}" min="0" max="200" step="0.5" oninput="updateEkonomi()" style="text-align:center;">
-      <input type="range" min="0" max="50" step="0.5" value="${Math.min(prev,50)}" id="eko-growth-slider-${i}" style="accent-color:#534AB7;" oninput="document.getElementById('eko-growth-${i}').value=this.value;updateEkonomi()">
-      <span id="eko-growth-preview-${i}" style="font-size:12px;color:#534AB7;font-weight:600;text-align:right;"></span>
+      <input type="number" class="eko-inp" id="eko-newcust-${i}" value="${prev}" min="0" max="9999" step="1" oninput="syncSlider(${i});updateEkonomi()" style="text-align:center;">
+      <input type="range" min="0" max="100" step="1" value="${Math.min(prev,100)}" id="eko-newcust-slider-${i}" style="accent-color:#534AB7;" oninput="document.getElementById('eko-newcust-${i}').value=this.value;updateEkonomi()">
+      <span id="eko-newcust-preview-${i}" style="font-size:12px;color:#534AB7;font-weight:600;text-align:right;"></span>
     </div>`;
   }
   const growthEl=document.getElementById('eko-growthYears');
@@ -757,15 +760,15 @@ function getEkoData(){
     const yi=Math.floor(m/12);
     const mi=m%12;
 
-    // Customers: launch in July 2026, then grow with per-year monthly rate
+    // Customers: launch in July 2026, then add new customers minus churn each month
     if(m<launchMonth){
       customers=0;
     } else if(m===launchMonth){
       customers=startCust;
     } else {
-      const growthEl=document.getElementById('eko-growth-'+yi);
-      const yGrowth=+(growthEl?growthEl.value:10)/100;
-      customers=Math.max(0,customers*(1+yGrowth-churn));
+      const ncEl=document.getElementById('eko-newcust-'+yi);
+      const newPerMonth=+(ncEl?ncEl.value:1);
+      customers=Math.max(0,customers*(1-churn)+newPerMonth);
     }
 
     // Revenue
@@ -832,15 +835,12 @@ function updateEkonomi(){
   const data=getEkoData();
   if(!data.length) return;
 
-  // Sync sliders with number inputs and show year-end customer preview
+  // Update year-end customer forecast previews
   for(let i=0;i<vArG;i++){
-    const inp=document.getElementById('eko-growth-'+i);
-    const slider=document.getElementById('eko-growth-slider-'+i);
-    const preview=document.getElementById('eko-growth-preview-'+i);
-    if(inp&&slider) slider.value=Math.min(+inp.value,50);
+    const preview=document.getElementById('eko-newcust-preview-'+i);
     if(preview){
       const yrEnd=data.filter(d=>d.yi===i);
-      if(yrEnd.length) preview.textContent=yrEnd[yrEnd.length-1].customers+' kunder';
+      if(yrEnd.length) preview.textContent=yrEnd[yrEnd.length-1].customers.toLocaleString('sv-SE')+' kunder';
     }
   }
 
@@ -942,6 +942,7 @@ function updateEkonomi(){
   }
   const monEl=document.getElementById('ekoMonthly');
   if(monEl)monEl.innerHTML=monHtml;
+  if(!_suppressSave) saveToStorage();
 }
 
 function toggleEkoMon(i){
@@ -954,6 +955,71 @@ function fmtK(n){
   if(a>=1000000)return(n/1000000).toFixed(1).replace('.',',')+' M';
   if(a>=1000)return Math.round(n/1000)+'k';
   return Math.round(n).toString();
+}
+
+function syncSlider(i){
+  const inp=document.getElementById('eko-newcust-'+i);
+  const slider=document.getElementById('eko-newcust-slider-'+i);
+  if(inp&&slider) slider.value=Math.min(+inp.value,100);
+}
+
+function saveToStorage(){
+  const state={};
+  document.querySelectorAll('input,select').forEach(el=>{
+    if(!el.id) return;
+    if(el.type==='checkbox') state[el.id]=el.checked;
+    else if(['range','number','text'].includes(el.type)||el.tagName==='SELECT') state[el.id]=el.value;
+  });
+  state['__otherCosts']=JSON.stringify(ekoOtherCosts);
+  try{localStorage.setItem('agarmodell_v1',JSON.stringify(state));}catch(e){}
+}
+
+function loadFromStorage(){
+  _suppressSave = true;  // keep suppressed throughout load; re-enabled at very end
+  let state;
+  try{
+    const raw=localStorage.getItem('agarmodell_v1');
+    if(!raw){ _suppressSave=false; return; }
+    state=JSON.parse(raw);
+  }catch(e){ _suppressSave=false; return; }
+
+  // Apply vArG first so rebuild uses correct count
+  if(state['vAr']){
+    vArG=+state['vAr'];
+    const el=document.getElementById('vAr');
+    if(el) el.value=state['vAr'];
+    const lbl=document.getElementById('vArVal');
+    if(lbl) lbl.textContent=vArG+' år';
+    buildKompYears(); buildArRows(); buildEkoYears();
+  }
+
+  // Apply all saved input values
+  Object.entries(state).forEach(([id,val])=>{
+    if(id.startsWith('__')) return;
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(el.type==='checkbox') el.checked=!!val;
+    else el.value=val;
+  });
+
+  // Sync newcust sliders after restoring values
+  for(let i=0;i<vArG;i++) syncSlider(i);
+
+  // Restore dynamic other costs
+  try{
+    if(state['__otherCosts']){
+      ekoOtherCosts=JSON.parse(state['__otherCosts']);
+      renderOtherCosts();
+    }
+  }catch(e){}
+
+  // Restore consultant recurring labels
+  for(let i=0;i<vArG;i++) ekoUpdateConLbl(i);
+
+  // Recalculate everything, then save once at the very end
+  update();
+  _suppressSave=false;  // re-enable saves now that all values are correctly in DOM
+  updateEkonomi();      // triggers saveToStorage() with the correct restored values
 }
 
 function drawEkoChart(data,beIdx,fsIdx){
