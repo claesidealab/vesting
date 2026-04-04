@@ -256,7 +256,11 @@ input[type=number]{appearance:textfield;}
 <!-- COST INPUTS -->
 <div class="section-title">Kostnader</div>
 <div class="card">
-  <div class="eko-sub" style="margin-top:0;">Löner (hämtas automatiskt från Kompensation-fliken)</div>
+  <div class="eko-sub" style="margin-top:0;">Löner</div>
+  <div style="font-size:12px;color:#888;background:#f5f4f0;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;">
+    Lönekostnad = bruttolön + <strong>arbetsgivaravgifter 31,42%</strong> + ITP1-pension<br>
+    Lön och arbetsinsats hämtas från Kompensation-fliken. Ange nedan när respektive person börjar ta ut lön.
+  </div>
   <div id="eko-salaries"></div>
 
   <div class="eko-sub">IT-plattform (fasta månadskostnader)</div>
@@ -335,6 +339,7 @@ input[type=number]{appearance:textfield;}
 function fmt(n){return Math.round(n).toLocaleString('sv-SE')+' kr';}
 function fmtPct(n){return(Math.round(n*10)/10).toFixed(1)+'%';}
 function itp1(lon){const d1=Math.min(lon,47625)*0.045;const d2=Math.max(lon-47625,0)*0.30;return{d1,d2,tot:d1+d2};}
+const SOC_AVG=0.3142; // Arbetsgivaravgifter (standard)
 function showTab(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-'+id).classList.add('active');el.classList.add('active');}
 let vArG=6;
 
@@ -777,26 +782,29 @@ function getEkoData(){
     const mrr=customers*price+customers*addonRev*addonPct;
     const totalRev=mrr+supplierRev;
 
-    // Salary costs (salary + ITP1 pension)
+    // Salary costs: bruttolön + arbetsgivaravgifter (31.42%) + ITP1-pension
     let salaryCost=0;
     const kfEl=document.getElementById('kf_'+yi);
     const bfBEl=document.getElementById('bf_bolag_'+yi);
     const bfEl=document.getElementById('bf_'+yi);
     if(kfEl&&kfEl.checked&&bfBEl&&bfBEl.checked&&bfEl&&fStart>=0&&yi>=fStart){
       const pct=+bfEl.value/100;
-      salaryCost+=lon*pct+pen.tot*pct;
+      const gross=lon*pct;
+      salaryCost+=gross*(1+SOC_AVG)+pen.tot*pct;
     }
     const kpEl=document.getElementById('kp_'+yi);
     const bpBEl=document.getElementById('bp_bolag_'+yi);
     const bpEl=document.getElementById('bp_'+yi);
     if(kpEl&&kpEl.checked&&bpBEl&&bpBEl.checked&&bpEl&&pStart>=0&&yi>=pStart){
       const pct=+bpEl.value/100;
-      salaryCost+=lon*pct+pen.tot*pct;
+      const gross=lon*pct;
+      salaryCost+=gross*(1+SOC_AVG)+pen.tot*pct;
     }
     const cEgenEl=document.getElementById('fp_c_'+yi);
     if(cOn&&cStart>=0&&yi>=cStart&&cEgenEl){
       const pct=+cEgenEl.value/100;
-      salaryCost+=lon*pct+pen.tot*pct;
+      const gross=lon*pct;
+      salaryCost+=gross*(1+SOC_AVG)+pen.tot*pct;
     }
 
     // IT costs
@@ -934,7 +942,7 @@ function updateEkonomi(){
       </div>
       <div class="eko-mon-body" id="eko-mon-body-${i}">
         <table class="eko-mon-tbl">
-          <thead><tr><th>Månad</th><th class="td-r">Kunder</th><th class="td-r">MRR</th><th class="td-r">Intäkter</th><th class="td-r">Löner</th><th class="td-r">IT</th><th class="td-r">Konsulter</th><th class="td-r">Övrigt</th><th class="td-r">Kostnader</th><th class="td-r">Resultat</th><th class="td-r">Kum. kassa</th></tr></thead>
+          <thead><tr><th>Månad</th><th class="td-r">Kunder</th><th class="td-r">MRR</th><th class="td-r">Intäkter</th><th class="td-r">Löner inkl. avg.</th><th class="td-r">IT</th><th class="td-r">Konsulter</th><th class="td-r">Övrigt</th><th class="td-r">Kostnader</th><th class="td-r">Resultat</th><th class="td-r">Kum. kassa</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
