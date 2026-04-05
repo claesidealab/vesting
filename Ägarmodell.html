@@ -268,11 +268,14 @@ input[type=number]{appearance:textfield;}
     </div>
 
     <div class="eko-pnl-card" id="eko-card-it">
-      <div class="eko-pnl-title" onclick="toggleEkoCard('eko-card-it')">IT-plattform<span class="eko-caret">▾</span></div>
+      <div class="eko-pnl-title" onclick="toggleEkoCard('eko-card-it')">Mjukvara &amp; IT<span class="eko-caret">▾</span></div>
       <div class="eko-pnl-body">
-        <div style="font-size:11px;color:#999;margin-bottom:8px;">Fasta och rörliga månadskostnader</div>
-        <div id="eko-itCostRows"></div>
-        <button class="eko-dyn-btn" style="margin-top:6px;" onclick="addITCost()">+ Lägg till</button>
+        <div class="eko-pnl-sub" style="margin-top:0;">Fast (kr/mån) — oberoende av antal användare</div>
+        <div id="eko-itFixedRows"></div>
+        <button class="eko-dyn-btn" style="margin-top:4px;" onclick="addITFixed()">+ Lägg till</button>
+        <div class="eko-pnl-sub">Rörlig (kr/kund/mån) — skalas med användare</div>
+        <div id="eko-itVarRows"></div>
+        <button class="eko-dyn-btn" style="margin-top:4px;" onclick="addITVar()">+ Lägg till</button>
       </div>
     </div>
 
@@ -623,10 +626,16 @@ function updateVesting(){
 }
 
 let ekoOtherCosts = [];
-let ekoITCosts = [
-  {name:'Claude API', base:500, scale:true, perCust:2},
-  {name:'Netlify', base:200, scale:false, perCust:0},
-  {name:'MIRO', base:200, scale:false, perCust:0}
+// Fast mjukvara: {name, amount}  — kr/mån oavsett användare
+let ekoITFixed = [
+  {name:'Hosting/deploy (Vercel, Netlify…)', amount:200},
+  {name:'Design (Figma, Sketch…)', amount:200},
+  {name:'Projekthantering (Linear, Notion…)', amount:150},
+];
+// Rörlig mjukvara: {name, perCust}  — kr/kund/mån
+let ekoITVar = [
+  {name:'AI/LLM-API (OpenAI, Anthropic…)', perCust:3},
+  {name:'Databas/infra (Supabase, Firebase…)', perCust:1},
 ];
 let _suppressSave = true;  // suppress saves during initial build to protect localStorage
 
@@ -691,7 +700,8 @@ function buildEkoYears() {
 
   // Salary selectors and IT costs
   buildEkoSalaries();
-  renderITCosts();
+  renderITFixed();
+  renderITVar();
   updateEkonomi();
 }
 
@@ -741,36 +751,53 @@ function buildEkoSalaries(){
   if(el)el.innerHTML=html;
 }
 
-function renderITCosts(){
+function renderITFixed(){
   let html='';
-  ekoITCosts.forEach((item,i)=>{
-    html+=`<div class="eko-it-item">
-      <div style="display:grid;grid-template-columns:1fr 78px 28px;gap:6px;align-items:center;margin-bottom:5px;">
-        <input type="text" class="eko-inp" placeholder="Namn" value="${item.name}" style="font-size:12px;padding:4px 7px;" oninput="ekoITCosts[${i}].name=this.value;updateEkonomi()">
-        <input type="number" class="eko-inp" value="${item.base}" min="0" placeholder="kr/mån" style="font-size:12px;padding:4px 7px;" oninput="ekoITCosts[${i}].base=+this.value;updateEkonomi()">
-        <button class="eko-rm-btn" onclick="removeITCost(${i})">×</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#888;">
-        <label class="toggle" style="width:36px;height:20px;flex-shrink:0;"><input type="checkbox" ${item.scale?'checked':''} onchange="ekoITCosts[${i}].scale=this.checked;renderITCosts();updateEkonomi()"><span class="slider-tog" style="border-radius:10px;"></span></label>
-        <span style="white-space:nowrap;">Per kund:</span>
-        <input type="number" class="eko-inp" value="${item.perCust}" min="0" step="0.5" style="width:52px;font-size:11px;padding:3px 5px;${item.scale?'':'opacity:0.35;pointer-events:none;'}" oninput="ekoITCosts[${i}].perCust=+this.value;updateEkonomi()">
-        <span>kr</span>
-      </div>
+  ekoITFixed.forEach((item,i)=>{
+    html+=`<div style="display:grid;grid-template-columns:1fr 72px 26px;gap:5px;align-items:center;margin-bottom:5px;">
+      <input type="text" class="eko-inp" placeholder="Namn/verktyg" value="${item.name}" style="font-size:12px;padding:4px 6px;" oninput="ekoITFixed[${i}].name=this.value;">
+      <input type="number" class="eko-inp" value="${item.amount}" min="0" placeholder="kr/mån" style="font-size:12px;padding:4px 6px;" oninput="ekoITFixed[${i}].amount=+this.value;updateEkonomi()">
+      <button class="eko-rm-btn" onclick="removeITFixed(${i})">×</button>
     </div>`;
   });
-  const el=document.getElementById('eko-itCostRows');
+  const el=document.getElementById('eko-itFixedRows');
   if(el)el.innerHTML=html;
 }
 
-function addITCost(){
-  ekoITCosts.push({name:'',base:0,scale:false,perCust:0});
-  renderITCosts();
+function addITFixed(){
+  ekoITFixed.push({name:'',amount:0});
+  renderITFixed();
   updateEkonomi();
 }
 
-function removeITCost(i){
-  ekoITCosts.splice(i,1);
-  renderITCosts();
+function removeITFixed(i){
+  ekoITFixed.splice(i,1);
+  renderITFixed();
+  updateEkonomi();
+}
+
+function renderITVar(){
+  let html='';
+  ekoITVar.forEach((item,i)=>{
+    html+=`<div style="display:grid;grid-template-columns:1fr 72px 26px;gap:5px;align-items:center;margin-bottom:5px;">
+      <input type="text" class="eko-inp" placeholder="Namn/tjänst" value="${item.name}" style="font-size:12px;padding:4px 6px;" oninput="ekoITVar[${i}].name=this.value;">
+      <input type="number" class="eko-inp" value="${item.perCust}" min="0" step="0.1" placeholder="kr/kund" style="font-size:12px;padding:4px 6px;" oninput="ekoITVar[${i}].perCust=+this.value;updateEkonomi()">
+      <button class="eko-rm-btn" onclick="removeITVar(${i})">×</button>
+    </div>`;
+  });
+  const el=document.getElementById('eko-itVarRows');
+  if(el)el.innerHTML=html;
+}
+
+function addITVar(){
+  ekoITVar.push({name:'',perCust:0});
+  renderITVar();
+  updateEkonomi();
+}
+
+function removeITVar(i){
+  ekoITVar.splice(i,1);
+  renderITVar();
   updateEkonomi();
 }
 
@@ -856,8 +883,10 @@ function getEkoData(){
       salaryCost+=lon*pct*(1+SOC_AVG)+pen.tot*pct;
     }
 
-    // IT costs from dynamic array
-    const itCost=ekoITCosts.reduce((s,item)=>s+item.base+(item.scale?customers*item.perCust:0),0);
+    // IT costs: fast per mån + rörlig per kund
+    const itFixed=ekoITFixed.reduce((s,item)=>s+(+item.amount||0),0);
+    const itVar=ekoITVar.reduce((s,item)=>s+customers*(+item.perCust||0),0);
+    const itCost=itFixed+itVar;
 
     // Consultant costs
     let consultCost=0;
@@ -1046,7 +1075,8 @@ function saveToStorage(){
     else if(['range','number','text'].includes(el.type)||el.tagName==='SELECT') state[el.id]=el.value;
   });
   state['__otherCosts']=JSON.stringify(ekoOtherCosts);
-  state['__itCosts']=JSON.stringify(ekoITCosts);
+  state['__itFixed']=JSON.stringify(ekoITFixed);
+  state['__itVar']=JSON.stringify(ekoITVar);
   try{localStorage.setItem('agarmodell_v1',JSON.stringify(state));}catch(e){}
 }
 
@@ -1088,7 +1118,8 @@ function loadFromStorage(){
       renderOtherCosts();
     }
   }catch(e){}
-  try{ if(state['__itCosts']){ ekoITCosts=JSON.parse(state['__itCosts']); renderITCosts(); }}catch(e){}
+  try{ if(state['__itFixed']){ ekoITFixed=JSON.parse(state['__itFixed']); renderITFixed(); }}catch(e){}
+  try{ if(state['__itVar']){ ekoITVar=JSON.parse(state['__itVar']); renderITVar(); }}catch(e){}
 
   // Restore consultant recurring labels
   for(let i=0;i<vArG;i++) ekoUpdateConLbl(i);
