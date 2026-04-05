@@ -103,6 +103,17 @@ input[type=number]{appearance:textfield;}
 .eko-yr-pos td:last-child{color:#085041;font-weight:700;}
 .eko-yr-neg td:last-child{color:#c0392b;}
 .eko-yr-pos{background:#f0faf6;}
+/* ── Split panel layout ── */
+.eko-split{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start;}
+@media(max-width:780px){.eko-split{grid-template-columns:1fr;}}
+.eko-left{position:sticky;top:16px;max-height:calc(100vh - 80px);overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.eko-right{min-width:0;}
+.eko-pnl-card{background:#fff;border:1px solid #e5e3dc;border-radius:12px;padding:.875rem 1rem;}
+.eko-pnl-title{font-size:11px;font-weight:700;color:#534AB7;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0ede6;}
+.eko-pnl-sub{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.4px;margin:10px 0 5px;}
+.eko-pnl-sub:first-child{margin-top:0;}
+.eko-it-item{border-bottom:1px solid #f5f4f0;padding-bottom:8px;margin-bottom:8px;}
+.eko-it-item:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0;}
 .save-btn{padding:7px 18px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;}
 .save-btn:hover{background:#3d35a0;}
 .save-btn:active{transform:scale(.97);}
@@ -203,146 +214,127 @@ input[type=number]{appearance:textfield;}
 
 <!-- EKONOMI -->
 <div id="panel-ekonomi" class="panel">
+<div class="eko-split">
 
-<!-- KEY METRICS STRIP -->
-<div class="eko-metrics">
-  <div class="eko-metric">
-    <div class="eko-metric-label">Månader till break-even</div>
-    <div class="eko-metric-val" id="eko-m-breakeven">—</div>
-    <div class="eko-metric-sub" id="eko-m-breakeven-sub">beräknas…</div>
-  </div>
-  <div class="eko-metric">
-    <div class="eko-metric-label">Totalt kapital behövs</div>
-    <div class="eko-metric-val" id="eko-m-capital">—</div>
-    <div class="eko-metric-sub">Max negativt kassaflöde</div>
-  </div>
-  <div class="eko-metric">
-    <div class="eko-metric-label">MRR vid break-even</div>
-    <div class="eko-metric-val" id="eko-m-mrr">—</div>
-    <div class="eko-metric-sub" id="eko-m-mrr-sub"></div>
-  </div>
-  <div class="eko-metric">
-    <div class="eko-metric-label">Första löneutbetalning</div>
-    <div class="eko-metric-val" id="eko-m-firstsal">—</div>
-    <div class="eko-metric-sub" id="eko-m-firstsal-sub">Ingen lön inlagd</div>
-  </div>
-</div>
+  <!-- ── LEFT: Antaganden ── -->
+  <div class="eko-left">
 
-<!-- REVENUE INPUTS -->
-<div class="section-title">Intäkter</div>
-<div class="card">
-  <div class="eko-sub" style="margin-top:0;">Kundintäkter</div>
+    <div class="eko-pnl-card">
+      <div class="eko-pnl-title">Intäkter</div>
 
-  <div class="eko-grid3" style="margin-bottom:16px;">
-    <div class="eko-field">
-      <label>Startkunder (Jul 2026)</label>
-      <input type="number" class="eko-inp" id="eko-startCust" value="5" min="0" oninput="updateEkonomi()">
+      <div class="eko-pnl-sub">Prissättning &amp; churn</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:2px;">
+        <div class="eko-field">
+          <label>Pris/kund/mån</label>
+          <input type="number" class="eko-inp" id="eko-price" value="500" min="0" oninput="updateEkonomi()">
+        </div>
+        <div class="eko-field">
+          <label>Churn/mån (%)</label>
+          <input type="number" class="eko-inp" id="eko-churn" value="2" min="0" max="100" step="0.5" oninput="updateEkonomi()">
+        </div>
+        <div class="eko-field">
+          <label>Start Jul '26</label>
+          <input type="number" class="eko-inp" id="eko-startCust" value="5" min="0" oninput="updateEkonomi()">
+        </div>
+      </div>
+
+      <div class="eko-pnl-sub">Nya kunder/mån per år</div>
+      <div id="eko-growthYears"></div>
+
+      <div class="eko-pnl-sub">Add-ons</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div class="eko-field">
+          <label>Tillägg/kund/mån (kr)</label>
+          <input type="number" class="eko-inp" id="eko-addon" value="500" min="0" oninput="updateEkonomi()">
+        </div>
+        <div class="eko-field">
+          <label>Andel kunder (%)</label>
+          <input type="number" class="eko-inp" id="eko-addonPct" value="40" min="0" max="100" oninput="updateEkonomi()">
+        </div>
+      </div>
+
+      <div class="eko-pnl-sub">Leverantörsintäkter (kr/mån per år)</div>
+      <div id="eko-supplierYears"></div>
     </div>
-    <div class="eko-field">
-      <label>Pris per kund/mån (kr)</label>
-      <input type="number" class="eko-inp" id="eko-price" value="500" min="0" oninput="updateEkonomi()">
+
+    <div class="eko-pnl-card">
+      <div class="eko-pnl-title">Löner</div>
+      <div style="font-size:11px;color:#999;margin-bottom:8px;line-height:1.5;">Bruttolön + arb.avg. 31,42% + ITP1 · Lön &amp; arbetsinsats från Kompensation-fliken</div>
+      <div id="eko-salaries"></div>
     </div>
-    <div class="eko-field">
-      <label>Churn per månad (%)</label>
-      <input type="number" class="eko-inp" id="eko-churn" value="2" min="0" max="100" step="0.5" oninput="updateEkonomi()">
+
+    <div class="eko-pnl-card">
+      <div class="eko-pnl-title">IT-plattform</div>
+      <div style="font-size:11px;color:#999;margin-bottom:8px;">Fasta och rörliga månadskostnader</div>
+      <div id="eko-itCostRows"></div>
+      <button class="eko-dyn-btn" style="margin-top:6px;" onclick="addITCost()">+ Lägg till</button>
     </div>
+
+    <div class="eko-pnl-card">
+      <div class="eko-pnl-title">Konsulter (per år)</div>
+      <div id="eko-consultYears"></div>
+    </div>
+
+    <div class="eko-pnl-card">
+      <div class="eko-pnl-title">Övriga kostnader</div>
+      <div id="eko-otherCostRows"></div>
+      <button class="eko-dyn-btn" style="margin-top:6px;" onclick="addOtherCost()">+ Lägg till</button>
+    </div>
+
   </div>
 
-  <div class="eko-sub" style="margin-top:0;">Månatlig kundtillväxt per år</div>
-  <div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;font-size:11px;font-weight:600;color:#888;margin-bottom:6px;padding:0 2px;">
-    <span>År</span><span>Nya/mån</span><span></span><span style="text-align:right;">Prognos vid årsslut</span>
-  </div>
-  <div id="eko-growthYears"></div>
+  <!-- ── RIGHT: Utfall ── -->
+  <div class="eko-right">
 
-  <div class="eko-sub">Tilläggstjänster (add-ons)</div>
-  <div class="eko-grid2">
-    <div class="eko-field"><label>Genomsn. tillägg per kund/mån (kr)</label><input type="number" class="eko-inp" id="eko-addon" value="500" min="0" oninput="updateEkonomi()"></div>
-    <div class="eko-field"><label>Andel kunder med tillägg (%)</label><input type="number" class="eko-inp" id="eko-addonPct" value="40" min="0" max="100" oninput="updateEkonomi()"></div>
+    <div class="eko-metrics" style="margin-bottom:1.25rem;">
+      <div class="eko-metric">
+        <div class="eko-metric-label">Månader till break-even</div>
+        <div class="eko-metric-val" id="eko-m-breakeven">—</div>
+        <div class="eko-metric-sub" id="eko-m-breakeven-sub">beräknas…</div>
+      </div>
+      <div class="eko-metric">
+        <div class="eko-metric-label">Totalt kapital behövs</div>
+        <div class="eko-metric-val" id="eko-m-capital">—</div>
+        <div class="eko-metric-sub">Max negativt kassaflöde</div>
+      </div>
+      <div class="eko-metric">
+        <div class="eko-metric-label">MRR vid break-even</div>
+        <div class="eko-metric-val" id="eko-m-mrr">—</div>
+        <div class="eko-metric-sub" id="eko-m-mrr-sub"></div>
+      </div>
+      <div class="eko-metric">
+        <div class="eko-metric-label">Första löneutbetalning</div>
+        <div class="eko-metric-val" id="eko-m-firstsal">—</div>
+        <div class="eko-metric-sub" id="eko-m-firstsal-sub">Ingen lön inlagd</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-legend">
+        <span><span class="leg-dot" style="background:#1D9E75;"></span>Intäkter/mån</span>
+        <span><span class="leg-dot" style="background:#e74c3c;"></span>Kostnader/mån</span>
+        <span><span class="leg-dot" style="background:#534AB7;"></span>Kumulativt kassaflöde</span>
+      </div>
+      <canvas id="ekoChart"></canvas>
+    </div>
+
+    <div style="font-size:15px;font-weight:600;margin:1.25rem 0 .75rem;color:#111;">Sammanfattning per år</div>
+    <div class="card" style="overflow-x:auto;padding:0;margin-bottom:1.5rem;">
+      <table>
+        <thead><tr>
+          <th>År</th><th class="td-r">Kunder</th><th class="td-r">Intäkter</th>
+          <th class="td-r">Kostnader</th><th class="td-r">Resultat</th><th class="td-r">Kum. kassa</th>
+        </tr></thead>
+        <tbody id="ekoYearTbody"></tbody>
+      </table>
+    </div>
+
+    <div style="font-size:15px;font-weight:600;margin-bottom:.75rem;color:#111;">Månadsdetaljer</div>
+    <div id="ekoMonthly"></div>
+
   </div>
 
-  <div class="eko-sub">Leverantörs-/partnerintäkter (per år)</div>
-  <div id="eko-supplierYears"></div>
 </div>
-
-<!-- COST INPUTS -->
-<div class="section-title">Kostnader</div>
-<div class="card">
-  <div class="eko-sub" style="margin-top:0;">Löner</div>
-  <div style="font-size:12px;color:#888;background:#f5f4f0;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;">
-    Lönekostnad = bruttolön + <strong>arbetsgivaravgifter 31,42%</strong> + ITP1-pension<br>
-    Lön och arbetsinsats hämtas från Kompensation-fliken. Ange nedan när respektive person börjar ta ut lön.
-  </div>
-  <div id="eko-salaries"></div>
-
-  <div class="eko-sub">IT-plattform (fasta månadskostnader)</div>
-  <div class="eko-it-row">
-    <span class="eko-it-label">Claude API</span>
-    <input type="number" class="eko-it-inp" id="eko-claude" value="500" min="0" oninput="updateEkonomi()">
-    <span style="font-size:12px;color:#888;">kr/mån</span>
-  </div>
-  <div class="eko-it-row" style="margin-left:122px;margin-top:-4px;margin-bottom:12px;">
-    <label class="toggle"><input type="checkbox" id="eko-claudeScale" onchange="updateEkonomi()"><span class="slider-tog"></span></label>
-    <span style="font-size:12px;color:#666;">Skalas med kunder:</span>
-    <input type="number" class="eko-it-inp" id="eko-claudePerCust" value="2" min="0" step="0.5" style="width:65px;" oninput="updateEkonomi()">
-    <span style="font-size:12px;color:#888;">kr/kund/mån</span>
-  </div>
-  <div class="eko-it-row">
-    <span class="eko-it-label">Netlify</span>
-    <input type="number" class="eko-it-inp" id="eko-netlify" value="200" min="0" oninput="updateEkonomi()">
-    <span style="font-size:12px;color:#888;">kr/mån</span>
-  </div>
-  <div class="eko-it-row">
-    <span class="eko-it-label">MIRO</span>
-    <input type="number" class="eko-it-inp" id="eko-miro" value="200" min="0" oninput="updateEkonomi()">
-    <span style="font-size:12px;color:#888;">kr/mån</span>
-  </div>
-  <div class="eko-it-row">
-    <input type="text" class="eko-inp" id="eko-otherIT-label" placeholder="Övrig IT (namn)" style="max-width:140px;" oninput="updateEkonomi()">
-    <input type="number" class="eko-it-inp" id="eko-otherIT-amt" value="0" min="0" oninput="updateEkonomi()">
-    <span style="font-size:12px;color:#888;">kr/mån</span>
-  </div>
-
-  <div class="eko-sub">Konsulter / externa utvecklare (per år)</div>
-  <div id="eko-consultYears"></div>
-
-  <div class="eko-sub">Övriga månatliga kostnader</div>
-  <div id="eko-otherCostRows"></div>
-  <button class="eko-dyn-btn" onclick="addOtherCost()">+ Lägg till kostnad</button>
-</div>
-
-<!-- CHART -->
-<div class="section-title">Kassaflöde & intäkter</div>
-<div class="chart-wrap">
-  <div class="chart-legend">
-    <span><span class="leg-dot" style="background:#1D9E75;"></span>Intäkter/mån</span>
-    <span><span class="leg-dot" style="background:#e74c3c;"></span>Kostnader/mån</span>
-    <span><span class="leg-dot" style="background:#534AB7;"></span>Kumulativt kassaflöde</span>
-  </div>
-  <canvas id="ekoChart"></canvas>
-</div>
-
-<!-- YEARLY SUMMARY -->
-<div class="section-title">Sammanfattning per år</div>
-<div class="card" style="overflow-x:auto;padding:0;">
-  <table>
-    <thead>
-      <tr>
-        <th>År</th>
-        <th class="td-r">Kunder (slut)</th>
-        <th class="td-r">Intäkter</th>
-        <th class="td-r">Kostnader</th>
-        <th class="td-r">Resultat</th>
-        <th class="td-r">Kumulativ kassa</th>
-      </tr>
-    </thead>
-    <tbody id="ekoYearTbody"></tbody>
-  </table>
-</div>
-
-<!-- MONTHLY DETAIL -->
-<div class="section-title" style="margin-top:1.5rem;">Månadsdetaljer</div>
-<div id="ekoMonthly"></div>
-
 </div>
 </div>
 
@@ -621,6 +613,11 @@ function updateVesting(){
 }
 
 let ekoOtherCosts = [];
+let ekoITCosts = [
+  {name:'Claude API', base:500, scale:true, perCust:2},
+  {name:'Netlify', base:200, scale:false, perCust:0},
+  {name:'MIRO', base:200, scale:false, perCust:0}
+];
 let _suppressSave = true;  // suppress saves during initial build to protect localStorage
 
 rebuildAll();
@@ -635,12 +632,12 @@ function buildEkoYears() {
   let growthHtml='';
   for(let i=0;i<vArG;i++){
     const prev=document.getElementById('eko-newcust-'+i)?document.getElementById('eko-newcust-'+i).value:(newCustDefaults[i]||5);
-    const yearLabel=i===0?'2026 (Jul–Dec)':String(2026+i);
-    growthHtml+=`<div style="display:grid;grid-template-columns:100px 80px 1fr 120px;gap:6px;align-items:center;margin-bottom:8px;">
-      <span style="font-size:13px;color:#888;font-weight:600;">${yearLabel}</span>
-      <input type="number" class="eko-inp" id="eko-newcust-${i}" value="${prev}" min="0" max="9999" step="1" oninput="syncSlider(${i});updateEkonomi()" style="text-align:center;">
+    const yearLabel=i===0?'Jul-Dec':String(2026+i);
+    growthHtml+=`<div style="display:grid;grid-template-columns:48px 54px 1fr 70px;gap:4px;align-items:center;margin-bottom:6px;">
+      <span style="font-size:12px;color:#888;font-weight:600;">${yearLabel}</span>
+      <input type="number" class="eko-inp" id="eko-newcust-${i}" value="${prev}" min="0" max="9999" step="1" oninput="syncSlider(${i});updateEkonomi()" style="text-align:center;padding:4px 6px;">
       <input type="range" min="0" max="100" step="1" value="${Math.min(prev,100)}" id="eko-newcust-slider-${i}" style="accent-color:#534AB7;" oninput="document.getElementById('eko-newcust-${i}').value=this.value;updateEkonomi()">
-      <span id="eko-newcust-preview-${i}" style="font-size:12px;color:#534AB7;font-weight:600;text-align:right;"></span>
+      <span id="eko-newcust-preview-${i}" style="font-size:11px;color:#534AB7;font-weight:600;text-align:right;white-space:nowrap;"></span>
     </div>`;
   }
   const growthEl=document.getElementById('eko-growthYears');
@@ -650,10 +647,10 @@ function buildEkoYears() {
   let supHtml='';
   for(let i=0;i<vArG;i++){
     const prev=document.getElementById('eko-supplier-'+i)?document.getElementById('eko-supplier-'+i).value:0;
-    supHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">
-      <span style="min-width:50px;color:#888;font-weight:600;">${2026+i}</span>
-      <input type="number" class="eko-inp" id="eko-supplier-${i}" value="${prev||0}" min="0" style="max-width:110px;" oninput="updateEkonomi()">
-      <span style="color:#888;font-size:12px;">kr/mån från leverantörer</span>
+    supHtml+=`<div style="display:grid;grid-template-columns:42px 1fr 60px;gap:4px;align-items:center;margin-bottom:5px;">
+      <span style="font-size:12px;color:#888;font-weight:600;">${2026+i}</span>
+      <input type="number" class="eko-inp" id="eko-supplier-${i}" value="${prev||0}" min="0" style="padding:4px 6px;" oninput="updateEkonomi()">
+      <span style="font-size:10px;color:#aaa;">kr/mån</span>
     </div>`;
   }
   const supEl=document.getElementById('eko-supplierYears');
@@ -665,21 +662,24 @@ function buildEkoYears() {
     const pAmt=document.getElementById('eko-con-amt-'+i)?document.getElementById('eko-con-amt-'+i).value:0;
     const pLbl=document.getElementById('eko-con-lbl-'+i)?document.getElementById('eko-con-lbl-'+i).value:'';
     const pRec=document.getElementById('eko-con-rec-'+i)?document.getElementById('eko-con-rec-'+i).checked:true;
-    conHtml+=`<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #f0ede6;">
-      <div style="font-size:12px;color:#888;font-weight:600;margin-bottom:6px;">${2026+i}</div>
-      <div style="display:grid;grid-template-columns:1fr 100px auto auto;gap:8px;align-items:center;">
-        <input type="text" class="eko-inp" id="eko-con-lbl-${i}" placeholder="Konsult/leverantör (lämna tomt om ingen)" value="${pLbl}" oninput="updateEkonomi()">
-        <input type="number" class="eko-inp" id="eko-con-amt-${i}" value="${pAmt||0}" min="0" placeholder="Belopp" oninput="updateEkonomi()">
+    conHtml+=`<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #f5f4f0;">
+      <div style="font-size:11px;color:#aaa;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;">${2026+i}</div>
+      <div style="display:grid;grid-template-columns:1fr 80px;gap:5px;margin-bottom:4px;">
+        <input type="text" class="eko-inp" id="eko-con-lbl-${i}" placeholder="Konsult (tomt = ingen)" value="${pLbl}" style="padding:4px 6px;font-size:12px;" oninput="updateEkonomi()">
+        <input type="number" class="eko-inp" id="eko-con-amt-${i}" value="${pAmt||0}" min="0" placeholder="kr" style="padding:4px 6px;font-size:12px;" oninput="updateEkonomi()">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
         <label class="toggle"><input type="checkbox" id="eko-con-rec-${i}" ${pRec?'checked':''} onchange="ekoUpdateConLbl(${i});updateEkonomi()"><span class="slider-tog"></span></label>
-        <span id="eko-con-rec-lbl-${i}" style="font-size:11px;white-space:nowrap;color:#666;min-width:52px;">${pRec?'kr/mån':'engångs'}</span>
+        <span id="eko-con-rec-lbl-${i}" style="font-size:11px;color:#666;">${pRec?'kr/mån':'engångs'}</span>
       </div>
     </div>`;
   }
   const conEl=document.getElementById('eko-consultYears');
   if(conEl)conEl.innerHTML=conHtml;
 
-  // Salary selectors
+  // Salary selectors and IT costs
   buildEkoSalaries();
+  renderITCosts();
   updateEkonomi();
 }
 
@@ -702,28 +702,59 @@ function buildEkoSalaries(){
     return yOpts.replace(`value="${sel}"`,`value="${sel}" selected`);
   }
 
+  const rowStyle='display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f5f4f0;';
+  const nameStyle='font-weight:600;font-size:13px;';
   const html=`
-    <div class="eko-sal-row">
-      <span class="eko-sal-name" style="color:#085041;">Fredrik</span>
-      <span style="font-size:12px;color:#888;flex:1;">Hämtas från Kompensation (bolaget betalar-toggle)</span>
-      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
-      <select class="eko-inp" id="eko-sal-f-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(fPrev)}</select>
+    <div style="${rowStyle}">
+      <span style="${nameStyle}color:#085041;">Fredrik</span>
+      <span style="font-size:11px;color:#aaa;">Bolaget betalar-toggle</span>
+      <select class="eko-inp" id="eko-sal-f-start" style="width:80px;padding:4px 4px;font-size:12px;" onchange="updateEkonomi()">${selOpts(fPrev)}</select>
     </div>
-    <div class="eko-sal-row">
-      <span class="eko-sal-name" style="color:#633806;">Pontus</span>
-      <span style="font-size:12px;color:#888;flex:1;">Hämtas från Kompensation (bolaget betalar-toggle)</span>
-      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
-      <select class="eko-inp" id="eko-sal-p-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(pPrev)}</select>
+    <div style="${rowStyle}">
+      <span style="${nameStyle}color:#633806;">Pontus</span>
+      <span style="font-size:11px;color:#aaa;">Bolaget betalar-toggle</span>
+      <select class="eko-inp" id="eko-sal-p-start" style="width:80px;padding:4px 4px;font-size:12px;" onchange="updateEkonomi()">${selOpts(pPrev)}</select>
     </div>
-    <div class="eko-sal-row">
-      <span class="eko-sal-name" style="color:#534AB7;">Claes</span>
+    <div style="display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:center;padding:6px 0;">
+      <span style="${nameStyle}color:#534AB7;">Claes</span>
       <label class="toggle"><input type="checkbox" id="eko-sal-c-on" ${cOn?'checked':''} onchange="updateEkonomi()"><span class="slider-tog"></span></label>
-      <span style="font-size:12px;color:#666;flex:1;">Tar lön från bolaget</span>
-      <span style="font-size:12px;color:#666;">Börjar fr.o.m.:</span>
-      <select class="eko-inp" id="eko-sal-c-start" style="width:88px;" onchange="updateEkonomi()">${selOpts(cPrev)}</select>
+      <select class="eko-inp" id="eko-sal-c-start" style="width:80px;padding:4px 4px;font-size:12px;" onchange="updateEkonomi()">${selOpts(cPrev)}</select>
     </div>`;
   const el=document.getElementById('eko-salaries');
   if(el)el.innerHTML=html;
+}
+
+function renderITCosts(){
+  let html='';
+  ekoITCosts.forEach((item,i)=>{
+    html+=`<div class="eko-it-item">
+      <div style="display:grid;grid-template-columns:1fr 78px 28px;gap:6px;align-items:center;margin-bottom:5px;">
+        <input type="text" class="eko-inp" placeholder="Namn" value="${item.name}" style="font-size:12px;padding:4px 7px;" oninput="ekoITCosts[${i}].name=this.value;updateEkonomi()">
+        <input type="number" class="eko-inp" value="${item.base}" min="0" placeholder="kr/mån" style="font-size:12px;padding:4px 7px;" oninput="ekoITCosts[${i}].base=+this.value;updateEkonomi()">
+        <button class="eko-rm-btn" onclick="removeITCost(${i})">×</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#888;">
+        <label class="toggle" style="width:36px;height:20px;flex-shrink:0;"><input type="checkbox" ${item.scale?'checked':''} onchange="ekoITCosts[${i}].scale=this.checked;renderITCosts();updateEkonomi()"><span class="slider-tog" style="border-radius:10px;"></span></label>
+        <span style="white-space:nowrap;">Per kund:</span>
+        <input type="number" class="eko-inp" value="${item.perCust}" min="0" step="0.5" style="width:52px;font-size:11px;padding:3px 5px;${item.scale?'':'opacity:0.35;pointer-events:none;'}" oninput="ekoITCosts[${i}].perCust=+this.value;updateEkonomi()">
+        <span>kr</span>
+      </div>
+    </div>`;
+  });
+  const el=document.getElementById('eko-itCostRows');
+  if(el)el.innerHTML=html;
+}
+
+function addITCost(){
+  ekoITCosts.push({name:'',base:0,scale:false,perCust:0});
+  renderITCosts();
+  updateEkonomi();
+}
+
+function removeITCost(i){
+  ekoITCosts.splice(i,1);
+  renderITCosts();
+  updateEkonomi();
 }
 
 function addOtherCost(){
@@ -755,12 +786,7 @@ function getEkoData(){
   const price=+(document.getElementById('eko-price')?document.getElementById('eko-price').value:500);
   const addonRev=+(document.getElementById('eko-addon')?document.getElementById('eko-addon').value:0);
   const addonPct=+(document.getElementById('eko-addonPct')?document.getElementById('eko-addonPct').value:0)/100;
-  const claudeBase=+(document.getElementById('eko-claude')?document.getElementById('eko-claude').value:500);
-  const claudeScale=document.getElementById('eko-claudeScale')&&document.getElementById('eko-claudeScale').checked;
-  const claudePC=+(document.getElementById('eko-claudePerCust')?document.getElementById('eko-claudePerCust').value:2);
-  const netlify=+(document.getElementById('eko-netlify')?document.getElementById('eko-netlify').value:200);
-  const miro=+(document.getElementById('eko-miro')?document.getElementById('eko-miro').value:200);
-  const otherIT=+(document.getElementById('eko-otherIT-amt')?document.getElementById('eko-otherIT-amt').value:0);
+  // IT costs computed from dynamic ekoITCosts array
   const fStart=+(document.getElementById('eko-sal-f-start')?document.getElementById('eko-sal-f-start').value:-1);
   const pStart=+(document.getElementById('eko-sal-p-start')?document.getElementById('eko-sal-p-start').value:-1);
   const cOn=document.getElementById('eko-sal-c-on')&&document.getElementById('eko-sal-c-on').checked;
@@ -818,8 +844,8 @@ function getEkoData(){
       salaryCost+=gross*(1+SOC_AVG)+pen.tot*pct;
     }
 
-    // IT costs
-    const itCost=claudeBase+(claudeScale?customers*claudePC:0)+netlify+miro+otherIT;
+    // IT costs from dynamic array
+    const itCost=ekoITCosts.reduce((s,item)=>s+item.base+(item.scale?customers*item.perCust:0),0);
 
     // Consultant costs
     let consultCost=0;
@@ -1003,6 +1029,7 @@ function saveToStorage(){
     else if(['range','number','text'].includes(el.type)||el.tagName==='SELECT') state[el.id]=el.value;
   });
   state['__otherCosts']=JSON.stringify(ekoOtherCosts);
+  state['__itCosts']=JSON.stringify(ekoITCosts);
   try{localStorage.setItem('agarmodell_v1',JSON.stringify(state));}catch(e){}
 }
 
@@ -1044,6 +1071,7 @@ function loadFromStorage(){
       renderOtherCosts();
     }
   }catch(e){}
+  try{ if(state['__itCosts']){ ekoITCosts=JSON.parse(state['__itCosts']); renderITCosts(); }}catch(e){}
 
   // Restore consultant recurring labels
   for(let i=0;i<vArG;i++) ekoUpdateConLbl(i);
