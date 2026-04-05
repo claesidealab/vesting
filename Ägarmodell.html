@@ -136,7 +136,7 @@ input[type=number]{appearance:textfield;}
   </div>
 </div>
 <div class="tab-bar">
-  <button class="tab active" onclick="showTab('komp',this)">Kompensation</button>
+  <button class="tab active" onclick="showTab('komp',this)">Team & arbete</button>
   <button class="tab" onclick="showTab('vesting',this)">Vesting & ägande</button>
   <button class="tab" onclick="showTab('ekonomi',this)">Ekonomi</button>
 </div>
@@ -161,7 +161,14 @@ input[type=number]{appearance:textfield;}
   <label class="toggle"><input type="checkbox" id="nettoToggle" onchange="update()"><span class="slider-tog"></span></label>
   <span class="toggle-label" id="lbl-netto">Netto</span>
 </div>
-<div class="section-title">Inkomstbortfall per år</div>
+<div class="section-title">Lön från bolaget</div>
+<div class="card">
+  <div style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.6;">
+    Styr när respektive person börjar ta ut lön. Lönekostnad = bruttolön × arbetsinsats × (1 + arb.avg. 31,42%) + ITP1.
+  </div>
+  <div id="salaryControls"></div>
+</div>
+<div class="section-title">Team per år</div>
 <div id="kompYears"></div>
 <div class="section-title">Claes totala utlägg</div>
 <div class="card">
@@ -194,17 +201,6 @@ input[type=number]{appearance:textfield;}
   Fas 1 (ej alla 100%): fördelning proportionellt efter arbetsinsats<br>
   Fas 2 (alla 100%): omvänd viktning — de under 33,3% får större andel tills lika<br>
   Claes arbetsinsats = egentid + kompenserat bortfall (F + P)
-</div>
-<div class="section-title">Arbetsinsats per år</div>
-<div class="card">
-  <div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr 1fr;gap:8px;font-size:12px;margin-bottom:10px;font-weight:600;">
-    <span style="color:#888;">År</span>
-    <span style="color:#085041;">Fredrik</span>
-    <span style="color:#633806;">Pontus</span>
-    <span style="color:#3C3489;">Claes (egen)</span>
-    <span style="color:#534AB7;">Claes (totalt)</span>
-  </div>
-  <div id="arRows"></div>
 </div>
 <div class="section-title">Ägarutveckling</div>
 <div class="legend">
@@ -260,13 +256,6 @@ input[type=number]{appearance:textfield;}
       </div>
     </div>
 
-    <div class="eko-pnl-card" id="eko-card-loner">
-      <div class="eko-pnl-title" onclick="toggleEkoCard('eko-card-loner')">Löner<span class="eko-caret">▾</span></div>
-      <div class="eko-pnl-body">
-        <div style="font-size:11px;color:#999;margin-bottom:8px;line-height:1.5;">Bruttolön + arb.avg. 31,42% + ITP1 · Arbetsinsats från Kompensation-fliken</div>
-        <div id="eko-salaries"></div>
-      </div>
-    </div>
 
     <div class="eko-pnl-card" id="eko-card-it">
       <div class="eko-pnl-title" onclick="toggleEkoCard('eko-card-it')">Mjukvara &amp; IT<span class="eko-caret">▾</span></div>
@@ -363,54 +352,118 @@ let vArG=6;
 function rebuildAll(){
   vArG=+document.getElementById('vAr').value;
   document.getElementById('vArVal').textContent=vArG+' år';
-  buildKompYears();buildArRows();update();buildEkoYears();
+  buildKompYears();buildSalaryControls();update();buildEkoYears();
 }
 
 function buildKompYears(){
+  const arDef=[{f:50,p:50,c:0},{f:50,p:50,c:0},{f:100,p:100,c:50},{f:100,p:100,c:100},{f:100,p:100,c:100},{f:100,p:100,c:100}];
   let html='';
   for(let i=0;i<vArG;i++){
+    const d=arDef[i]||{f:50,p:50,c:10};
+    // Preserve existing values if elements exist
+    const prevF=document.getElementById('fp_f_'+i)?document.getElementById('fp_f_'+i).value:d.f;
+    const prevP=document.getElementById('fp_p_'+i)?document.getElementById('fp_p_'+i).value:d.p;
+    const prevC=document.getElementById('fp_c_'+i)?document.getElementById('fp_c_'+i).value:d.c;
+    const prevKf=document.getElementById('kf_'+i)?document.getElementById('kf_'+i).checked:(i>=2);
+    const prevKp=document.getElementById('kp_'+i)?document.getElementById('kp_'+i).checked:(i>=2);
+    const prevBf=document.getElementById('bf_'+i)?document.getElementById('bf_'+i).value:50;
+    const prevBp=document.getElementById('bp_'+i)?document.getElementById('bp_'+i).value:(i===1?20:50);
+    const prevBfBolag=document.getElementById('bf_bolag_'+i)?document.getElementById('bf_bolag_'+i).checked:(i===2);
+    const prevBpBolag=document.getElementById('bp_bolag_'+i)?document.getElementById('bp_bolag_'+i).checked:false;
+
     html+=`<div class="yblock"><div class="yheader">${2026+i}</div>
-      <div class="prow2">
-        <span class="plabel" style="color:#085041;">Fredrik</span>
-        <label class="toggle"><input type="checkbox" id="kf_${i}" ${i>=2?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
-        <span id="kfb_${i}" class="${i>=2?'kbadge':'nbadge'}">${i>=2?'Kompenseras':'Kompenseras ej'}</span>
-        <input type="range" min="0" max="100" step="5" value="50" id="bf_${i}" style="flex:1;" oninput="update()">
-        <span class="val" id="bfv_${i}">50%</span>
-        <span class="ni" id="nif_${i}"></span>
-        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" ${i===2?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
-        <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${i===2?'background:#fef9e7;color:#7d6608;border:1px solid #e0c87a;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${i===2?'Bolaget betalar':'Claes betalar'}</span>
+      <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6;">
+        <span style="font-weight:600;font-size:13px;color:#085041;">Fredrik</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="number" min="0" max="100" value="${prevF}" id="fp_f_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
+          <span style="font-size:11px;color:#888;">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <label class="toggle"><input type="checkbox" id="kf_${i}" ${prevKf?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
+          <span id="kfb_${i}" class="${prevKf?'kbadge':'nbadge'}" style="font-size:11px;">${prevKf?'Kompenseras':'Ej komp.'}</span>
+          <input type="range" min="0" max="100" step="5" value="${prevBf}" id="bf_${i}" style="width:80px;accent-color:#534AB7;" oninput="update()">
+          <span class="val" id="bfv_${i}" style="min-width:35px;">${prevBf}%</span>
+          <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" ${prevBfBolag?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
+          <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${prevBfBolag?'background:#fef9e7;color:#7d6608;border:1px solid #e0c87a;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${prevBfBolag?'Bolaget':'Claes'}</span>
+          <span class="ni" id="nif_${i}" style="font-size:12px;color:#888;"></span>
+        </div>
       </div>
-      <div class="prow2">
-        <span class="plabel" style="color:#633806;">Pontus</span>
-        <label class="toggle"><input type="checkbox" id="kp_${i}" ${i>=2?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
-        <span id="kpb_${i}" class="${i>=2?'kbadge':'nbadge'}">${i>=2?'Kompenseras':'Kompenseras ej'}</span>
-        <input type="range" min="0" max="100" step="5" value="${i===1?20:50}" id="bp_${i}" style="flex:1;" oninput="update()">
-        <span class="val" id="bpv_${i}">${i===1?'20%':'50%'}</span>
-        <span class="ni" id="nip_${i}"></span>
-        <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bp_bolag_${i}" onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
-        <span id="bp_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#888;border:1px solid #e0e0e0;white-space:nowrap;">Claes betalar</span>
+      <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6;">
+        <span style="font-weight:600;font-size:13px;color:#633806;">Pontus</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="number" min="0" max="100" value="${prevP}" id="fp_p_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
+          <span style="font-size:11px;color:#888;">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <label class="toggle"><input type="checkbox" id="kp_${i}" ${prevKp?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
+          <span id="kpb_${i}" class="${prevKp?'kbadge':'nbadge'}" style="font-size:11px;">${prevKp?'Kompenseras':'Ej komp.'}</span>
+          <input type="range" min="0" max="100" step="5" value="${prevBp}" id="bp_${i}" style="width:80px;accent-color:#534AB7;" oninput="update()">
+          <span class="val" id="bpv_${i}" style="min-width:35px;">${prevBp}%</span>
+          <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bp_bolag_${i}" ${prevBpBolag?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
+          <span id="bp_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${prevBpBolag?'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${prevBpBolag?'Bolaget':'Claes'}</span>
+          <span class="ni" id="nip_${i}" style="font-size:12px;color:#888;"></span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;">
+        <span style="font-weight:600;font-size:13px;color:#3C3489;">Claes</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="number" min="0" max="100" value="${prevC}" id="fp_c_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;background:#f0eff9;color:#3C3489;text-align:center;" oninput="update()">
+          <span style="font-size:11px;color:#888;">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#888;">Totalt:</span>
+          <input type="number" id="fp_ctot_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;background:#EEEDFE;color:#534AB7;font-weight:700;text-align:center;" readonly>
+          <span style="font-size:11px;color:#888;">%</span>
+        </div>
       </div>
       <div class="cuppr" id="cuppr_${i}">Claes uppräkning: —</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-top:1px solid #e5e3dc;margin-top:6px;color:#888;">
+        <span>Claes utlägg: <strong id="claes_utlagg_${i}" style="color:#111;">—</strong></span>
+        <span>Bolagets lönekostnad: <strong id="bolag_kost_${i}" style="color:#534AB7;">—</strong></span>
+      </div>
     </div>`;
   }
   document.getElementById('kompYears').innerHTML=html;
 }
 
-function buildArRows(){
-  const def=[{f:50,p:50,c:0},{f:50,p:50,c:0},{f:100,p:100,c:50},{f:100,p:100,c:100},{f:100,p:100,c:100},{f:100,p:100,c:100}];
-  let html='';
-  const inp=`width:100%;font-size:13px;padding:5px 6px;border:1px solid #e5e3dc;border-radius:6px;`;
-  for(let i=0;i<vArG;i++){
-    const d=def[i]||{f:50,p:50,c:10};
-    html+=`<div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;align-items:center;">
-      <span style="font-size:13px;color:#888;">${2026+i}</span>
-      <input type="number" min="0" max="100" value="${d.f}" id="fp_f_${i}" style="${inp}background:#f9f9f9;color:#111;" oninput="updateVesting()">
-      <input type="number" min="0" max="100" value="${d.p}" id="fp_p_${i}" style="${inp}background:#f9f9f9;color:#111;" oninput="updateVesting()">
-      <input type="number" min="0" max="100" value="${d.c}" id="fp_c_${i}" style="${inp}background:#f0eff9;color:#3C3489;" oninput="update()">
-      <input type="number" id="fp_ctot_${i}" style="${inp}background:#EEEDFE;color:#534AB7;font-weight:700;" readonly>
-    </div>`;
+function buildSalaryControls(){
+  let yOpts='<option value="-1">Aldrig</option>';
+  for(let i=0;i<vArG;i++) yOpts+=`<option value="${i}">${2026+i}</option>`;
+
+  const fPrev=(document.getElementById('eko-sal-f-start')||{}).value||'-1';
+  const pPrev=(document.getElementById('eko-sal-p-start')||{}).value||'-1';
+  const cPrev=(document.getElementById('eko-sal-c-start')||{}).value||'2';
+  const fOn=document.getElementById('eko-sal-f-on')?document.getElementById('eko-sal-f-on').checked:false;
+  const pOn=document.getElementById('eko-sal-p-on')?document.getElementById('eko-sal-p-on').checked:false;
+  const cOn=document.getElementById('eko-sal-c-on')?document.getElementById('eko-sal-c-on').checked:true;
+
+  function selOpts(sel){
+    return yOpts.replace(`value="${sel}"`,`value="${sel}" selected`);
   }
-  document.getElementById('arRows').innerHTML=html;
+
+  const rowStyle='display:grid;grid-template-columns:55px auto 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f5f4f0;';
+  const nameStyle='font-weight:600;font-size:13px;';
+  const html=`
+    <div style="${rowStyle}">
+      <span style="${nameStyle}color:#085041;">Fredrik</span>
+      <label class="toggle"><input type="checkbox" id="eko-sal-f-on" ${fOn?'checked':''} onchange="update();updateEkonomi()"><span class="slider-tog"></span></label>
+      <span style="font-size:12px;color:#888;">Tar lön</span>
+      <div style="display:flex;align-items:center;gap:4px;"><span style="font-size:12px;color:#888;">Fr.o.m.:</span><select class="eko-inp" id="eko-sal-f-start" style="width:80px;padding:4px;font-size:12px;" onchange="update();updateEkonomi()">${selOpts(fPrev)}</select></div>
+    </div>
+    <div style="${rowStyle}">
+      <span style="${nameStyle}color:#633806;">Pontus</span>
+      <label class="toggle"><input type="checkbox" id="eko-sal-p-on" ${pOn?'checked':''} onchange="update();updateEkonomi()"><span class="slider-tog"></span></label>
+      <span style="font-size:12px;color:#888;">Tar lön</span>
+      <div style="display:flex;align-items:center;gap:4px;"><span style="font-size:12px;color:#888;">Fr.o.m.:</span><select class="eko-inp" id="eko-sal-p-start" style="width:80px;padding:4px;font-size:12px;" onchange="update();updateEkonomi()">${selOpts(pPrev)}</select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:55px auto 1fr auto;gap:8px;align-items:center;padding:6px 0;">
+      <span style="${nameStyle}color:#534AB7;">Claes</span>
+      <label class="toggle"><input type="checkbox" id="eko-sal-c-on" ${cOn?'checked':''} onchange="update();updateEkonomi()"><span class="slider-tog"></span></label>
+      <span style="font-size:12px;color:#888;">Tar lön</span>
+      <div style="display:flex;align-items:center;gap:4px;"><span style="font-size:12px;color:#888;">Fr.o.m.:</span><select class="eko-inp" id="eko-sal-c-start" style="width:80px;padding:4px;font-size:12px;" onchange="update();updateEkonomi()">${selOpts(cPrev)}</select></div>
+    </div>`;
+  const el=document.getElementById('salaryControls');
+  if(el) el.innerHTML=html;
 }
 
 function getUppr(i){
@@ -457,7 +510,7 @@ function update(){
       if(kompF){
         bfBolagEl.parentElement.style.opacity='1';
         badge.style.display='';
-        badge.textContent=fBolag?'Bolaget betalar':'Claes betalar';
+        badge.textContent=fBolag?'Bolaget':'Claes';
         badge.style.background=fBolag?'#fef9e7':'#f5f5f5';
         badge.style.color=fBolag?'#7d6608':'#888';
         badge.style.borderColor=fBolag?'#e0c87a':'#e0e0e0';
@@ -471,7 +524,7 @@ function update(){
       if(kompP){
         bpBolagEl.parentElement.style.opacity='1';
         badge.style.display='';
-        badge.textContent=pBolag?'Bolaget betalar':'Claes betalar';
+        badge.textContent=pBolag?'Bolaget':'Claes';
         badge.style.background=pBolag?'#fef9e7':'#f5f5f5';
         badge.style.color=pBolag?'#7d6608':'#888';
         badge.style.borderColor=pBolag?'#e0c87a':'#e0e0e0';
@@ -483,9 +536,9 @@ function update(){
     document.getElementById('bfv_'+i).textContent=pF+'%';
     document.getElementById('bpv_'+i).textContent=pP+'%';
     document.getElementById('kfb_'+i).className=kompF?'kbadge':'nbadge';
-    document.getElementById('kfb_'+i).textContent=kompF?'Kompenseras':'Kompenseras ej';
+    document.getElementById('kfb_'+i).textContent=kompF?'Kompenseras':'Ej komp.';
     document.getElementById('kpb_'+i).className=kompP?'kbadge':'nbadge';
-    document.getElementById('kpb_'+i).textContent=kompP?'Kompenseras':'Kompenseras ej';
+    document.getElementById('kpb_'+i).textContent=kompP?'Kompenseras':'Ej komp.';
     const lF=kompF?(netto?lon*(pF/100)*(1-skatt):lon*(pF/100)):0;
     const lP=kompP?(netto?lon*(pP/100)*(1-skatt):lon*(pP/100)):0;
     const penF=kompF?pen.tot*(pF/100):0;
@@ -505,6 +558,13 @@ function update(){
     const pFå=(!fBolag?penF:0)*mpa, pPå=(!pBolag?penP:0)*mpa;
     totLon+=lFå+lPå;totPen+=pFå+pPå;
     const åt=lFå+lPå+pFå+pPå;
+    // Compute and display per-year cost summaries
+    const bolagF=fBolag?(lon*(pF/100)*(1+SOC_AVG)+pen.tot*(pF/100)):0;
+    const bolagP=pBolag?(lon*(pP/100)*(1+SOC_AVG)+pen.tot*(pP/100)):0;
+    const bolagKostEl=document.getElementById('bolag_kost_'+i);
+    if(bolagKostEl) bolagKostEl.textContent=fmt(bolagF+bolagP);
+    const claesUtlaggEl=document.getElementById('claes_utlagg_'+i);
+    if(claesUtlaggEl) claesUtlaggEl.textContent=fmt(åt/mpa)+'/mån';
     sumHtml+=`<div class="summary-row" style="font-weight:600;font-size:13px;padding-top:8px;">${2026+i}</div>`;
     if(kompF&&!fBolag){sumHtml+=`<div class="summary-row indent"><span>Lön Fredrik (${pF}%)</span><span>${fmt(lFå)}</span></div><div class="summary-row indent"><span>Pension Fredrik (${pF}% av ITP1)</span><span>${fmt(pFå)}</span></div>`;}
     if(kompF&&fBolag){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Fredrik (${pF}%) — bolaget betalar</span><span>—</span></div>`;}
@@ -691,8 +751,7 @@ function buildEkoYears() {
   const conEl=document.getElementById('eko-consultYears');
   if(conEl)conEl.innerHTML=conHtml;
 
-  // Salary selectors and IT costs
-  buildEkoSalaries();
+  // IT costs
   renderITFixed();
   renderITVar();
   updateEkonomi();
@@ -702,46 +761,6 @@ function ekoUpdateConLbl(i){
   const el=document.getElementById('eko-con-rec-'+i);
   const lbl=document.getElementById('eko-con-rec-lbl-'+i);
   if(lbl&&el)lbl.textContent=el.checked?'kr/mån':'engångs';
-}
-
-function buildEkoSalaries(){
-  let yOpts='<option value="-1">Aldrig</option>';
-  for(let i=0;i<vArG;i++) yOpts+=`<option value="${i}">${2026+i}</option>`;
-
-  const fPrev=(document.getElementById('eko-sal-f-start')||{}).value||'0';
-  const pPrev=(document.getElementById('eko-sal-p-start')||{}).value||'0';
-  const cPrev=(document.getElementById('eko-sal-c-start')||{}).value||'2';
-  const fOn=document.getElementById('eko-sal-f-on')?document.getElementById('eko-sal-f-on').checked:false;
-  const pOn=document.getElementById('eko-sal-p-on')?document.getElementById('eko-sal-p-on').checked:false;
-  const cOn=document.getElementById('eko-sal-c-on')?document.getElementById('eko-sal-c-on').checked:true;
-
-  function selOpts(sel){
-    return yOpts.replace(`value="${sel}"`,`value="${sel}" selected`);
-  }
-
-  const rowStyle='display:grid;grid-template-columns:52px auto 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f5f4f0;';
-  const nameStyle='font-weight:600;font-size:13px;';
-  const html=`
-    <div style="${rowStyle}">
-      <span style="${nameStyle}color:#085041;">Fredrik</span>
-      <label class="toggle"><input type="checkbox" id="eko-sal-f-on" ${fOn?'checked':''} onchange="syncSalaryToKomp();updateEkonomi()"><span class="slider-tog"></span></label>
-      <span style="font-size:11px;color:#aaa;">Tar lön från bolaget</span>
-      <select class="eko-inp" id="eko-sal-f-start" style="width:80px;padding:4px;font-size:12px;" onchange="syncSalaryToKomp();updateEkonomi()">${selOpts(fPrev)}</select>
-    </div>
-    <div style="${rowStyle}">
-      <span style="${nameStyle}color:#633806;">Pontus</span>
-      <label class="toggle"><input type="checkbox" id="eko-sal-p-on" ${pOn?'checked':''} onchange="syncSalaryToKomp();updateEkonomi()"><span class="slider-tog"></span></label>
-      <span style="font-size:11px;color:#aaa;">Tar lön från bolaget</span>
-      <select class="eko-inp" id="eko-sal-p-start" style="width:80px;padding:4px;font-size:12px;" onchange="syncSalaryToKomp();updateEkonomi()">${selOpts(pPrev)}</select>
-    </div>
-    <div style="display:grid;grid-template-columns:52px auto 1fr auto;gap:8px;align-items:center;padding:6px 0;">
-      <span style="${nameStyle}color:#534AB7;">Claes</span>
-      <label class="toggle"><input type="checkbox" id="eko-sal-c-on" ${cOn?'checked':''} onchange="updateEkonomi()"><span class="slider-tog"></span></label>
-      <span style="font-size:11px;color:#aaa;">Tar lön från bolaget</span>
-      <select class="eko-inp" id="eko-sal-c-start" style="width:80px;padding:4px;font-size:12px;" onchange="updateEkonomi()">${selOpts(cPrev)}</select>
-    </div>`;
-  const el=document.getElementById('eko-salaries');
-  if(el)el.innerHTML=html;
 }
 
 function renderITFixed(){
@@ -1056,37 +1075,6 @@ function toggleEkoCard(id){
   if(card) card.classList.toggle('collapsed');
 }
 
-// Sync Ekonomi löne-toggles → Kompensation-fliken
-function syncSalaryToKomp(){
-  const fOn=document.getElementById('eko-sal-f-on')&&document.getElementById('eko-sal-f-on').checked;
-  const fStart=+(document.getElementById('eko-sal-f-start')?document.getElementById('eko-sal-f-start').value:-1);
-  const pOn=document.getElementById('eko-sal-p-on')&&document.getElementById('eko-sal-p-on').checked;
-  const pStart=+(document.getElementById('eko-sal-p-start')?document.getElementById('eko-sal-p-start').value:-1);
-  for(let i=0;i<vArG;i++){
-    // Fredrik
-    const kf=document.getElementById('kf_'+i);
-    const bfBolag=document.getElementById('bf_bolag_'+i);
-    if(kf){
-      if(fOn&&fStart>=0&&i>=fStart){
-        kf.checked=true;
-        if(bfBolag) bfBolag.checked=true;
-      } else {
-        // Lämna per-år-toggles oförändrade om de redan var aktiva med "Claes betalar"
-      }
-    }
-    // Pontus
-    const kp=document.getElementById('kp_'+i);
-    const bpBolag=document.getElementById('bp_bolag_'+i);
-    if(kp){
-      if(pOn&&pStart>=0&&i>=pStart){
-        kp.checked=true;
-        if(bpBolag) bpBolag.checked=true;
-      }
-    }
-  }
-  update(); // Uppdatera Kompensation-fliken
-}
-
 function syncSlider(i){
   const inp=document.getElementById('eko-newcust-'+i);
   const slider=document.getElementById('eko-newcust-slider-'+i);
@@ -1135,7 +1123,7 @@ function loadFromStorage(){
     if(el) el.value=state['vAr'];
     const lbl=document.getElementById('vArVal');
     if(lbl) lbl.textContent=vArG+' år';
-    buildKompYears(); buildArRows(); buildEkoYears();
+    buildKompYears(); buildSalaryControls(); buildEkoYears();
   }
 
   // Apply all saved input values
