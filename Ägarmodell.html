@@ -103,11 +103,22 @@ input[type=number]{appearance:textfield;}
 .eko-yr-pos td:last-child{color:#085041;font-weight:700;}
 .eko-yr-neg td:last-child{color:#c0392b;}
 .eko-yr-pos{background:#f0faf6;}
+.save-btn{padding:7px 18px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;}
+.save-btn:hover{background:#3d35a0;}
+.save-btn:active{transform:scale(.97);}
+.save-btn.saved{background:#1D9E75;}
+.save-confirm{font-size:12px;color:#1D9E75;font-weight:600;opacity:0;transition:opacity .3s;white-space:nowrap;}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h2 style="font-size:20px;font-weight:700;margin-bottom:1.5rem;color:#111;">Ägarmodell</h2>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:12px;flex-wrap:wrap;">
+  <h2 style="font-size:20px;font-weight:700;color:#111;">Ägarmodell</h2>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="save-confirm" id="saveConfirm">✓ Sparat</span>
+    <button class="save-btn" id="saveBtn" onclick="manualSave()">💾 Spara</button>
+  </div>
+</div>
 <div class="tab-bar">
   <button class="tab active" onclick="showTab('komp',this)">Kompensation</button>
   <button class="tab" onclick="showTab('vesting',this)">Vesting & ägande</button>
@@ -969,6 +980,19 @@ function syncSlider(i){
   const inp=document.getElementById('eko-newcust-'+i);
   const slider=document.getElementById('eko-newcust-slider-'+i);
   if(inp&&slider) slider.value=Math.min(+inp.value,100);
+}
+
+function manualSave(){
+  saveToStorage();
+  const btn=document.getElementById('saveBtn');
+  const confirm=document.getElementById('saveConfirm');
+  if(btn){btn.classList.add('saved');btn.textContent='✓ Sparat';}
+  if(confirm){confirm.style.opacity='1';}
+  clearTimeout(manualSave._t);
+  manualSave._t=setTimeout(()=>{
+    if(btn){btn.classList.remove('saved');btn.textContent='💾 Spara';}
+    if(confirm){confirm.style.opacity='0';}
+  },2500);
 }
 
 function saveToStorage(){
