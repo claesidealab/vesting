@@ -370,19 +370,24 @@ function buildKompYears(){
     const prevBp=document.getElementById('bp_'+i)?document.getElementById('bp_'+i).value:(i===1?20:50);
     const prevBfBolag=document.getElementById('bf_bolag_'+i)?document.getElementById('bf_bolag_'+i).checked:(i===2);
     const prevBpBolag=document.getElementById('bp_bolag_'+i)?document.getElementById('bp_bolag_'+i).checked:false;
+    const prevKc=document.getElementById('kc_'+i)?document.getElementById('kc_'+i).checked:false;
+    const prevBc=document.getElementById('bc_'+i)?document.getElementById('bc_'+i).value:100;
+    const prevCBolag=document.getElementById('bc_bolag_'+i)?document.getElementById('bc_bolag_'+i).checked:false;
 
     html+=`<div class="yblock"><div class="yheader">${2026+i}</div>
       <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6;">
         <span style="font-weight:600;font-size:13px;color:#085041;">Fredrik</span>
         <div style="display:flex;align-items:center;gap:4px;">
-          <input type="number" min="0" max="100" value="${prevF}" id="fp_f_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
+          <span style="font-size:10px;color:#999;min-width:32px;">Arbete</span>
+          <input type="number" min="0" max="100" value="${prevF}" id="fp_f_${i}" style="width:46px;font-size:13px;padding:4px 4px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
           <span style="font-size:11px;color:#888;">%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <label class="toggle"><input type="checkbox" id="kf_${i}" ${prevKf?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
           <span id="kfb_${i}" class="${prevKf?'kbadge':'nbadge'}" style="font-size:11px;">${prevKf?'Kompenseras':'Ej komp.'}</span>
-          <input type="range" min="0" max="100" step="5" value="${prevBf}" id="bf_${i}" style="width:80px;accent-color:#534AB7;" oninput="update()">
-          <span class="val" id="bfv_${i}" style="min-width:35px;">${prevBf}%</span>
+          <span style="font-size:10px;color:#999;margin-left:4px;">Lön</span>
+          <input type="range" min="0" max="100" step="5" value="${prevBf}" id="bf_${i}" style="width:70px;accent-color:#534AB7;" oninput="update()">
+          <span class="val" id="bfv_${i}" style="min-width:30px;">${prevBf}%</span>
           <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bf_bolag_${i}" ${prevBfBolag?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
           <span id="bf_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${prevBfBolag?'background:#fef9e7;color:#7d6608;border:1px solid #e0c87a;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${prevBfBolag?'Bolaget':'Claes'}</span>
           <span class="ni" id="nif_${i}" style="font-size:12px;color:#888;"></span>
@@ -391,30 +396,43 @@ function buildKompYears(){
       <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6;">
         <span style="font-weight:600;font-size:13px;color:#633806;">Pontus</span>
         <div style="display:flex;align-items:center;gap:4px;">
-          <input type="number" min="0" max="100" value="${prevP}" id="fp_p_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
+          <span style="font-size:10px;color:#999;min-width:32px;">Arbete</span>
+          <input type="number" min="0" max="100" value="${prevP}" id="fp_p_${i}" style="width:46px;font-size:13px;padding:4px 4px;border:1px solid #e5e3dc;border-radius:6px;text-align:center;" oninput="updateVesting()">
           <span style="font-size:11px;color:#888;">%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <label class="toggle"><input type="checkbox" id="kp_${i}" ${prevKp?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
           <span id="kpb_${i}" class="${prevKp?'kbadge':'nbadge'}" style="font-size:11px;">${prevKp?'Kompenseras':'Ej komp.'}</span>
-          <input type="range" min="0" max="100" step="5" value="${prevBp}" id="bp_${i}" style="width:80px;accent-color:#534AB7;" oninput="update()">
-          <span class="val" id="bpv_${i}" style="min-width:35px;">${prevBp}%</span>
+          <span style="font-size:10px;color:#999;margin-left:4px;">Lön</span>
+          <input type="range" min="0" max="100" step="5" value="${prevBp}" id="bp_${i}" style="width:70px;accent-color:#534AB7;" oninput="update()">
+          <span class="val" id="bpv_${i}" style="min-width:30px;">${prevBp}%</span>
           <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bp_bolag_${i}" ${prevBpBolag?'checked':''} onchange="update()"><span class="slider-tog" style="background:#e0c87a;"></span></label>
           <span id="bp_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;${prevBpBolag?'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;':'background:#f5f5f5;color:#888;border:1px solid #e0e0e0;'}white-space:nowrap;">${prevBpBolag?'Bolaget':'Claes'}</span>
           <span class="ni" id="nip_${i}" style="font-size:12px;color:#888;"></span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;">
+      <div style="display:grid;grid-template-columns:55px 70px auto;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6;">
         <span style="font-weight:600;font-size:13px;color:#3C3489;">Claes</span>
         <div style="display:flex;align-items:center;gap:4px;">
-          <input type="number" min="0" max="100" value="${prevC}" id="fp_c_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;background:#f0eff9;color:#3C3489;text-align:center;" oninput="update()">
+          <span style="font-size:10px;color:#999;min-width:32px;">Arbete</span>
+          <input type="number" min="0" max="100" value="${prevC}" id="fp_c_${i}" style="width:46px;font-size:13px;padding:4px 4px;border:1px solid #e5e3dc;border-radius:6px;background:#f0eff9;color:#3C3489;text-align:center;" oninput="update()">
           <span style="font-size:11px;color:#888;">%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:12px;color:#888;">Totalt:</span>
-          <input type="number" id="fp_ctot_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;background:#EEEDFE;color:#534AB7;font-weight:700;text-align:center;" readonly>
-          <span style="font-size:11px;color:#888;">%</span>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <label class="toggle"><input type="checkbox" id="kc_${i}" ${prevKc?'checked':''} onchange="update()"><span class="slider-tog"></span></label>
+          <span id="kcb_${i}" class="${prevKc?'kbadge':'nbadge'}" style="font-size:11px;">${prevKc?'Tar lön':'Ej lön'}</span>
+          <span style="font-size:10px;color:#999;margin-left:4px;">Lön</span>
+          <input type="range" min="0" max="100" step="5" value="${prevBc}" id="bc_${i}" style="width:70px;accent-color:#534AB7;" oninput="update()">
+          <span class="val" id="bcv_${i}" style="min-width:30px;">${prevBc}%</span>
+          <label class="toggle" title="Bolaget betalar"><input type="checkbox" id="bc_bolag_${i}" ${prevCBolag?'checked':''} onchange="update()" checked disabled><span class="slider-tog" style="background:#e0c87a;"></span></label>
+          <span id="bc_bolag_badge_${i}" style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fef9e7;color:#7d6608;border:1px solid #e0c87a;white-space:nowrap;">Bolaget</span>
+          <span class="ni" id="nic_${i}" style="font-size:12px;color:#888;"></span>
         </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;">
+        <span style="font-size:10px;color:#999;">Totalt (inkl. uppräkning):</span>
+        <input type="number" id="fp_ctot_${i}" style="width:52px;font-size:13px;padding:4px 6px;border:1px solid #e5e3dc;border-radius:6px;background:#EEEDFE;color:#534AB7;font-weight:700;text-align:center;" readonly>
+        <span style="font-size:11px;color:#888;">%</span>
       </div>
       <div class="cuppr" id="cuppr_${i}">Claes uppräkning: —</div>
       <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-top:1px solid #e5e3dc;margin-top:6px;color:#888;">
@@ -533,22 +551,47 @@ function update(){
         badge.style.display='none';
       }
     }
+    // Claes lön controls
+    const kcEl=document.getElementById('kc_'+i);
+    const bcEl=document.getElementById('bc_'+i);
+    const kompC=kcEl&&kcEl.checked;
+    const pC=bcEl?+bcEl.value:100;
+    // Claes bolaget badge — alltid "Bolaget" (Claes kan inte betala sig själv)
+    const bcBolagEl=document.getElementById('bc_bolag_'+i);
+    const cBolag=kompC; // Claes lön = alltid bolaget om aktiv
+    if(bcBolagEl){
+      bcBolagEl.checked=true; // alltid checked
+      const badge=document.getElementById('bc_bolag_badge_'+i);
+      if(kompC){
+        bcBolagEl.parentElement.style.opacity='1';
+        badge.style.display='';
+      } else {
+        bcBolagEl.parentElement.style.opacity='0.3';
+        badge.style.display='';
+      }
+    }
     document.getElementById('bfv_'+i).textContent=pF+'%';
     document.getElementById('bpv_'+i).textContent=pP+'%';
+    document.getElementById('bcv_'+i).textContent=pC+'%';
     document.getElementById('kfb_'+i).className=kompF?'kbadge':'nbadge';
     document.getElementById('kfb_'+i).textContent=kompF?'Kompenseras':'Ej komp.';
     document.getElementById('kpb_'+i).className=kompP?'kbadge':'nbadge';
     document.getElementById('kpb_'+i).textContent=kompP?'Kompenseras':'Ej komp.';
+    document.getElementById('kcb_'+i).className=kompC?'kbadge':'nbadge';
+    document.getElementById('kcb_'+i).textContent=kompC?'Tar lön':'Ej lön';
     const lF=kompF?(netto?lon*(pF/100)*(1-skatt):lon*(pF/100)):0;
     const lP=kompP?(netto?lon*(pP/100)*(1-skatt):lon*(pP/100)):0;
+    const lC=kompC?(netto?lon*(pC/100)*(1-skatt):lon*(pC/100)):0;
     const penF=kompF?pen.tot*(pF/100):0;
     const penP=kompP?pen.tot*(pP/100):0;
+    const penC=kompC?pen.tot*(pC/100):0;
     document.getElementById('nif_'+i).textContent=kompF?'= '+fmt(lF)+'/mån':'';
     document.getElementById('nip_'+i).textContent=kompP?'= '+fmt(lP)+'/mån':'';
-    const uppr=(kompF?pF:0)+(kompP?pP:0);
+    document.getElementById('nic_'+i).textContent=kompC?'= '+fmt(lC)+'/mån':'';
+    const uppr=getUppr(i);
     let upprTxt='Claes uppräkning detta år: ';
     if(uppr===0){upprTxt+='0% (ingen kompensation aktiv)';}
-    else{const d=[];if(kompF)d.push('Fredrik '+pF+'%');if(kompP)d.push('Pontus '+pP+'%');upprTxt+=d.join(' + ')+' = '+uppr+'%';}
+    else{const d=[];if(kompF&&!fBolag)d.push('Fredrik '+pF+'%');if(kompP&&!pBolag)d.push('Pontus '+pP+'%');upprTxt+=d.join(' + ')+' = '+uppr+'%';}
     document.getElementById('cuppr_'+i).textContent=upprTxt;
     const cEgenEl=document.getElementById('fp_c_'+i);
     const cTotEl=document.getElementById('fp_ctot_'+i);
@@ -561,8 +604,9 @@ function update(){
     // Compute and display per-year cost summaries
     const bolagF=fBolag?(lon*(pF/100)*(1+SOC_AVG)+pen.tot*(pF/100)):0;
     const bolagP=pBolag?(lon*(pP/100)*(1+SOC_AVG)+pen.tot*(pP/100)):0;
+    const bolagC=kompC?(lon*(pC/100)*(1+SOC_AVG)+pen.tot*(pC/100)):0;
     const bolagKostEl=document.getElementById('bolag_kost_'+i);
-    if(bolagKostEl) bolagKostEl.textContent=fmt(bolagF+bolagP);
+    if(bolagKostEl) bolagKostEl.textContent=fmt(bolagF+bolagP+bolagC);
     const claesUtlaggEl=document.getElementById('claes_utlagg_'+i);
     if(claesUtlaggEl) claesUtlaggEl.textContent=fmt(åt/mpa)+'/mån';
     sumHtml+=`<div class="summary-row" style="font-weight:600;font-size:13px;padding-top:8px;">${2026+i}</div>`;
@@ -570,6 +614,7 @@ function update(){
     if(kompF&&fBolag){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Fredrik (${pF}%) — bolaget betalar</span><span>—</span></div>`;}
     if(kompP&&!pBolag){sumHtml+=`<div class="summary-row indent"><span>Lön Pontus (${pP}%)</span><span>${fmt(lPå)}</span></div><div class="summary-row indent"><span>Pension Pontus (${pP}% av ITP1)</span><span>${fmt(pPå)}</span></div>`;}
     if(kompP&&pBolag){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Pontus (${pP}%) — bolaget betalar</span><span>—</span></div>`;}
+    if(kompC){sumHtml+=`<div class="summary-row indent" style="color:#7d6608;"><span>Claes (${pC}%) — bolaget betalar</span><span>${fmt(bolagC)}/mån</span></div>`;}
     sumHtml+=`<div class="summary-row" style="font-size:13px;color:#888;padding-bottom:8px;border-bottom:1px solid #eee;"><span>Delsumma (Claes utlägg)</span><span style="font-weight:600;color:#111;">${fmt(åt)}</span></div>`;
   }
   document.getElementById('summaryRows').innerHTML=sumHtml;
@@ -678,17 +723,19 @@ function updateVesting(){
   updateEkonomi();
 }
 
-let ekoOtherCosts = [];
+let ekoOtherCosts = [
+  {label:'Domännamn (Stajla.ai)', amount:193},
+];
 // Fast mjukvara: {name, amount}  — kr/mån oavsett användare
 let ekoITFixed = [
-  {name:'Hosting/deploy (Vercel, Netlify…)', amount:200},
-  {name:'Design (Figma, Sketch…)', amount:200},
-  {name:'Projekthantering (Linear, Notion…)', amount:150},
+  {name:'Netlify (hosting/deploy)', amount:95},
+  {name:'Supabase QA+Prod (databas)', amount:370},
 ];
 // Rörlig mjukvara: {name, perCust}  — kr/kund/mån
 let ekoITVar = [
-  {name:'AI/LLM-API (OpenAI, Anthropic…)', perCust:3},
-  {name:'Databas/infra (Supabase, Firebase…)', perCust:1},
+  {name:'Shotstack (videogenerering)', perCust:4},
+  {name:'Google Cloud (Stajla-chatten)', perCust:0.5},
+  {name:'OpenAI (overlay & captions)', perCust:0.2},
 ];
 let _suppressSave = true;  // suppress saves during initial build to protect localStorage
 
@@ -880,34 +927,47 @@ function getEkoData(){
     // Arbetsinsats hämtas från Kompensation; bara "Bolaget betalar" = företagskostnad
     // "Claes betalar" = Claes personliga kostnad, ska INTE påverka ekonomi-forecast
     let salaryCost=0;
-    // Fredrik: arbetsinsats-% (fp_f_i) — bara om bolagets toggle aktiv
+    let salF=0,salP=0,salC=0;
+    let fBetalar=false,pBetalar=false,cBetalar=false;
+    // Always read arbetsinsats from DOM
     const fpF=document.getElementById('fp_f_'+yi);
+    const fpP=document.getElementById('fp_p_'+yi);
+    const cEgenEl=document.getElementById('fp_c_'+yi);
+    const pctF=fpF?+fpF.value:0;
+    const pctP=fpP?+fpP.value:0;
+    const pctC=cEgenEl?+cEgenEl.value:0;
+    // Fredrik: lön bara om bolagets toggle aktiv
     const bfBolagEl=document.getElementById('bf_bolag_'+yi);
     const kfEl=document.getElementById('kf_'+yi);
     if(fOn&&fStart>=0&&yi>=fStart&&fpF){
-      // Kontrollera om "Bolaget betalar" — annars betalar Claes privat
       const bolagetBetalar=kfEl&&kfEl.checked&&bfBolagEl&&bfBolagEl.checked;
       if(bolagetBetalar){
-        const pct=+fpF.value/100;
-        salaryCost+=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+        fBetalar=true;
+        const pct=pctF/100;
+        salF=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+        salaryCost+=salF;
       }
     }
-    // Pontus: arbetsinsats-% (fp_p_i) — bara om bolagets toggle aktiv
-    const fpP=document.getElementById('fp_p_'+yi);
+    // Pontus: lön bara om bolagets toggle aktiv
     const bpBolagEl=document.getElementById('bp_bolag_'+yi);
     const kpEl=document.getElementById('kp_'+yi);
     if(pOn&&pStart>=0&&yi>=pStart&&fpP){
       const bolagetBetalar=kpEl&&kpEl.checked&&bpBolagEl&&bpBolagEl.checked;
       if(bolagetBetalar){
-        const pct=+fpP.value/100;
-        salaryCost+=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+        pBetalar=true;
+        const pct=pctP/100;
+        salP=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+        salaryCost+=salP;
       }
     }
-    // Claes: arbetsinsats-% (fp_c_i) — alltid företagskostnad om aktiv
-    const cEgenEl=document.getElementById('fp_c_'+yi);
-    if(cOn&&cStart>=0&&yi>=cStart&&cEgenEl){
-      const pct=+cEgenEl.value/100;
-      salaryCost+=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+    // Claes: lön om kc_ toggle är aktiv (alltid bolaget som betalar)
+    const kcEl=document.getElementById('kc_'+yi);
+    const bcSlider=document.getElementById('bc_'+yi);
+    if(cOn&&cStart>=0&&yi>=cStart&&kcEl&&kcEl.checked){
+      cBetalar=true;
+      const pct=bcSlider?(+bcSlider.value/100):1;
+      salC=lon*pct*(1+SOC_AVG)+pen.tot*pct;
+      salaryCost+=salC;
     }
 
     // IT costs: fast per mån + rörlig per kund
@@ -938,7 +998,9 @@ function getEkoData(){
       mrr:Math.round(mrr),supplierRev:Math.round(supplierRev),totalRev:Math.round(totalRev),
       salaryCost:Math.round(salaryCost),itCost:Math.round(itCost),
       consultCost:Math.round(consultCost),otherCost:Math.round(otherCost),
-      totalCost:Math.round(totalCost),net:Math.round(net),cumCash:Math.round(cumCash)});
+      totalCost:Math.round(totalCost),net:Math.round(net),cumCash:Math.round(cumCash),
+      pctF,pctP,pctC,salF:Math.round(salF),salP:Math.round(salP),salC:Math.round(salC),
+      fBetalar,pBetalar,cBetalar});
   }
   return results;
 }
@@ -1040,12 +1102,32 @@ function updateEkonomi(){
         <td style="font-weight:700;" class="${isPos?'eko-pos':'eko-neg'}">${d.cumCash>=0?'+':''}${fmt(d.cumCash)}</td>
       </tr>`;
     });
+    // Salary breakdown for this year (from first month of the year)
+    const ySample=yd[0]||{};
+    let salParts=[];
+    if(ySample.pctF>0){
+      const lbl=ySample.fBetalar?`Fredrik ${ySample.pctF}% → ${fmt(ySample.salF)}/mån`:`Fredrik ${ySample.pctF}% (ej lön från bolaget)`;
+      salParts.push(`<span style="color:#085041;">${lbl}</span>`);
+    }
+    if(ySample.pctP>0){
+      const lbl=ySample.pBetalar?`Pontus ${ySample.pctP}% → ${fmt(ySample.salP)}/mån`:`Pontus ${ySample.pctP}% (ej lön från bolaget)`;
+      salParts.push(`<span style="color:#633806;">${lbl}</span>`);
+    }
+    if(ySample.pctC>0){
+      const lbl=ySample.cBetalar?`Claes ${ySample.pctC}% → ${fmt(ySample.salC)}/mån`:`Claes ${ySample.pctC}% (ej lön från bolaget)`;
+      salParts.push(`<span style="color:#3C3489;">${lbl}</span>`);
+    }
+    const salBreakdown=salParts.length>0?salParts.join('<span style="color:#ccc;margin:0 6px;">|</span>'):'<span style="color:#888;">Ingen lön från bolaget detta år</span>';
+
     monHtml+=`<div class="eko-mon-block">
       <div class="eko-mon-hdr" onclick="toggleEkoMon(${i})">
         <span style="font-size:13px;">${2026+i} — Intäkter: ${fmt(totRev)} / Kostnader: ${fmt(totCost)}</span>
         <span style="font-size:13px;" class="${endCum>=0?'eko-pos':'eko-neg'}">Kassa: ${endCum>=0?'+':''}${fmt(endCum)} ▾</span>
       </div>
       <div class="eko-mon-body" id="eko-mon-body-${i}">
+        <div style="padding:8px 12px;background:#f9f8f5;border-bottom:1px solid #e5e3dc;font-size:12px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+          <span style="font-weight:600;color:#555;margin-right:4px;">Löner:</span>${salBreakdown}
+        </div>
         <table class="eko-mon-tbl">
           <thead><tr><th>Månad</th><th class="td-r">Kunder</th><th class="td-r">MRR</th><th class="td-r">Intäkter</th><th class="td-r">Löner inkl. avg.</th><th class="td-r">IT</th><th class="td-r">Konsulter</th><th class="td-r">Övrigt</th><th class="td-r">Kostnader</th><th class="td-r">Resultat</th><th class="td-r">Kum. kassa</th></tr></thead>
           <tbody>${rows}</tbody>
